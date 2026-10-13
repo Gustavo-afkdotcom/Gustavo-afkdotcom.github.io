@@ -131,6 +131,12 @@ footer{border-top:1px solid var(--rule);padding-top:16px;display:flex;flex-wrap:
 .plantas{grid-template-columns:repeat(2,minmax(0,1fr))}
 .plantas figure:last-child{grid-column:1/-1}
 @media (max-width:760px){.plantas{grid-template-columns:minmax(0,1fr)}}
+
+.secuencia ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+.secuencia li{display:grid;grid-template-columns:auto 1fr;gap:4px 8px;align-content:start;font-size:14px;line-height:1.35;color:var(--ink)}
+.secuencia li img{grid-column:1/-1;width:100%;height:auto;display:block}
+.secuencia li b{font-family:var(--mono);font-weight:500;font-size:12px;color:#9A5B17;padding-top:2px}
+@media (max-width:900px){.secuencia ol{grid-template-columns:repeat(2,minmax(0,1fr))}.secuencia li:last-child{grid-column:1/-1}}
 </style>
 </head>
 <body>
@@ -193,10 +199,16 @@ footer{border-top:1px solid var(--rule);padding-top:16px;display:flex;flex-wrap:
   </div>
 </section>
 
-<figure class="plano full">
-  <span class="rot">Despiece por capas</span>
-  <img src="img/capas.png" alt="Axonometría explotada en tres capas: base de parqueadero y guardería, podio de programas comunes y bloque de vivienda">
-</figure>
+<section class="plano full secuencia" aria-label="Cómo se arma el edificio">
+  <span class="rot">Cómo se arma · cinco pasos</span>
+  <ol>
+    <li><img src="img/paso1.png" alt="Paso 1: base con parqueadero y guardería bajo la calle"><b>01</b><span>Base: parqueadero y guardería bajo la calle</span></li>
+    <li><img src="img/paso2.png" alt="Paso 2: podio de adulto mayor, comercio, cocina comunitaria y vivienda productiva"><b>02</b><span>Podio: adulto mayor, comercio, cocina y vivienda productiva</span></li>
+    <li><img src="img/paso3.png" alt="Paso 3: módulos de vivienda desplazados sobre el podio"><b>03</b><span>Vivienda: módulos que se desplazan piso a piso</span></li>
+    <li><img src="img/paso4.png" alt="Paso 4: núcleo de ascensores y corredores abiertos por piso"><b>04</b><span>Núcleo y corredores que cosen todo</span></li>
+    <li><img src="img/paso5.png" alt="Paso 5: el edificio completo por programa"><b>05</b><span>El edificio completo</span></li>
+  </ol>
+</section>
 
 <section class="sec">
   <div class="lado"><span class="rot">Lo común</span><h2>La mitad del edificio es compartida</h2></div>
