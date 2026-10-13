@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Portafolio de Gustavo Oyuela: arquitectura diseñada con simulación y software para controlar obras.">
+<title>Gustavo Oyuela</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: índice de portafolio. Nombre y oficio arriba, cada proyecto como una fila grande con imagen o pieza a un lado y ficha al otro. */
+:root{
+  --bg:#E7E9E2; --surface:#F1F2EC; --fg:#1C211D; --muted:#5A625B; --rule:#C9CDC3;
+  --ocre:#9A5B17; --monte:#3E5A3A;
+  --display:"Familjen Grotesk","Helvetica Neue",Arial,sans-serif;
+  --body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#151916; --surface:#1C211D; --fg:#E4E7E0; --muted:#A0A89F; --rule:#323A33; --ocre:#D59448; --monte:#8DB283; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#151916; --surface:#1C211D; --fg:#E4E7E0; --muted:#A0A89F; --rule:#323A33; --ocre:#D59448; --monte:#8DB283; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17.5px;line-height:1.55;margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:clamp(16px,4vw,40px);padding-block:28px 72px;display:grid;gap:clamp(48px,7vw,88px)}
+h1,h2{font-family:var(--display);margin:0;letter-spacing:-.02em;text-wrap:balance}
+p{margin:0}
+a{color:inherit}
+.rot{font-family:var(--mono);font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px;border-bottom:1px solid var(--rule);padding-bottom:14px}
+header{display:grid;gap:22px}
+h1{font-size:clamp(52px,11vw,124px);font-weight:700;line-height:.88;letter-spacing:-.04em}
+h1 span{color:var(--ocre)}
+.intro{font-size:clamp(20px,2.4vw,26px);line-height:1.35;max-width:36ch}
+.proy{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px 44px;border-top:2px solid var(--fg);padding-top:20px;align-items:start}
+.proy .pieza{display:block;min-width:0}
+.proy .pieza img{width:100%;max-width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;display:block;border-radius:2px}
+.ficha{display:grid;gap:14px;min-width:0}
+.ficha h2{font-size:clamp(34px,4.6vw,52px);font-weight:700;line-height:.95}
+.ficha p{max-width:46ch}
+.datos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid var(--rule)}
+.datos div{padding:10px 12px 10px 0;border-bottom:1px solid var(--rule);display:grid;gap:2px}
+.datos b{font-family:var(--display);font-weight:600;font-size:28px;line-height:1;color:var(--ocre);font-variant-numeric:tabular-nums}
+.datos span{font-size:14px;color:var(--muted);line-height:1.35}
+.ir{display:inline-flex;align-items:center;gap:8px;font-family:var(--display);font-weight:600;font-size:17px;text-decoration:none;border:1.5px solid var(--fg);padding:9px 16px;border-radius:2px;justify-self:start}
+.ir:hover,.ir:focus-visible{background:var(--fg);color:var(--bg);outline:none}
+.enlaces{display:flex;flex-wrap:wrap;gap:10px}
+/* pieza tipográfica de GO Obra: tablero de obra */
+.tablero{background:var(--surface);border:1px solid var(--rule);border-radius:2px;padding:18px;display:grid;gap:12px;font-family:var(--mono);font-size:13px;text-decoration:none;color:var(--fg)}
+.tablero .fila{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;border-bottom:1px solid var(--rule);padding-bottom:8px}
+.tablero .fila span:last-child{font-variant-numeric:tabular-nums}
+.barra{height:10px;background:var(--rule);border-radius:1px;overflow:hidden}
+.barra i{display:block;height:100%;width:38%;background:var(--monte)}
+.chip{display:inline-block;padding:2px 8px;border:1px solid var(--monte);color:var(--monte);border-radius:2px;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em}
+.tablero .titulo{font-family:var(--display);font-size:22px;font-weight:600;letter-spacing:-.01em}
+.herr{display:flex;flex-wrap:wrap;gap:6px}
+.herr span{font-family:var(--mono);font-size:12px;border:1px solid var(--rule);padding:3px 8px;border-radius:2px}
+footer{border-top:1px solid var(--rule);padding-top:16px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px}
+@media (max-width:760px){.proy{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top rot"><span style="font-family:var(--display);font-size:15px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--fg)">Gustavo Oyuela</span><span>Arquitectura · Obra · Software</span><span>Bogotá</span></div>
+
+  <header>
+    <h1>Gustavo<br><span>Oyuela</span></h1>
+    <p class="intro">Diseño con la física del lugar y construyo herramientas para que la obra se controle con datos, no con suposiciones.</p>
+  </header>
+
+  <article class="proy" id="casa-umbral">
+    <a class="pieza" href="casa-umbral/"><img src="casa-umbral/img/fachada-oeste.jpg" alt="Fachada oeste de Casa Umbral: tres volúmenes escalonados con celosías de guadua"></a>
+    <div class="ficha">
+      <span class="rot">01 · Arquitectura · Anapoima, Cundinamarca</span>
+      <h2>Casa Umbral</h2>
+      <p>Una casa de tierra en una ladera de tierra caliente, diseñada con 22 experimentos de física sobre un mismo modelo paramétrico: sol, aire, agua, tierra, sismo y costo.</p>
+      <div class="datos">
+        <div><b>98,6 %</b><span>del año en confort sin aire acondicionado</span></div>
+        <div><b>−67 %</b><span>de tierra movida frente a la banca plana</span></div>
+        <div><b>171 m³</b><span>de lluvia captada al año</span></div>
+        <div><b>233 M</b><span>a 50 años, contra 242 M de la convencional</span></div>
+      </div>
+      <div class="herr"><span>Rhino</span><span>Grasshopper</span><span>Ladybug</span><span>Honeybee</span><span>EnergyPlus</span><span>Radiance</span></div>
+      <a class="ir" href="casa-umbral/">Ver el proyecto →</a>
+    </div>
+  </article>
+
+  <article class="proy" id="go-obra">
+    <a class="pieza tablero" href="https://goobradashboardrepository-production.up.railway.app/demo" target="_blank" rel="noopener" aria-label="Abrir la demo de GO Obra">
+      <span class="rot">Gemelo de obra · demo</span>
+      <span class="titulo">Edificio de 5 pisos · 1.000 m²</span>
+      <div class="fila"><span>Presupuesto</span><span>$1.820 M</span></div>
+      <div class="fila"><span>Ejecutado</span><span>$690 M</span></div>
+      <div class="barra" aria-hidden="true"><i></i></div>
+      <div class="fila"><span>Cronograma</span><span class="chip">A tiempo</span></div>
+      <div class="fila"><span>Desviación de costo proyectada</span><span>−2,3 %</span></div>
+      <span style="color:var(--muted)">Datos de ejemplo de la demo</span>
+    </a>
+    <div class="ficha">
+      <span class="rot">02 · Software para obra · desde 2026</span>
+      <h2>GO Obra</h2>
+      <p>Una plataforma que le da al dueño de una obra visibilidad independiente y en tiempo real: modelo 3D por pisos, presupuesto por etapa, cronograma, avances que el maestro reporta desde el celular, almacén con facturas escaneadas, equipo y reportes semanales.</p>
+      <p>La diseñé y la construí yo, y ya hay un cliente fuera de Bogotá que paga por ella.</p>
+      <div class="herr"><span>Supabase</span><span>PostgreSQL</span><span>n8n</span><span>Railway</span><span>IA</span></div>
+      <div class="enlaces">
+        <a class="ir" href="https://goobradashboardrepository-production.up.railway.app/demo" target="_blank" rel="noopener">Probar la demo →</a>
+        <a class="ir" href="https://goobra.co" target="_blank" rel="noopener">goobra.co →</a>
+      </div>
+    </div>
+  </article>
+
+  <footer class="rot"><span>Gustavo Oyuela · Bogotá</span><span>2026</span></footer>
+</div>
+</body>
+</html>
