@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="La Ola: edificio de vivienda colectiva de uso mixto con guardería, hogar de adulto mayor y espacios comunes. Portafolio de Gustavo Oyuela.">
+<title>La Ola</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: ficha de proyecto de arquitectura. Columna de rótulos a la izquierda (como el cajetín de un plano), contenido a la derecha; imágenes y planos a todo el ancho. */
+:root{
+  --bg:#E7E9E2;        /* cal sobre tierra, con sesgo verde de bosque seco */
+  --surface:#F1F2EC;
+  --fg:#1C211D;
+  --muted:#5A625B;
+  --rule:#C9CDC3;
+  --ocre:#9A5B17;      /* guadua y bloque de tierra con cal */
+  --monte:#3E5A3A;     /* bosque seco tropical */
+  --paper:#F5F4EE; --ink:#1E2421; --ink-muted:#5E665F;
+  --display:"Familjen Grotesk","Helvetica Neue",Arial,sans-serif;
+  --body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#151916; --surface:#1C211D; --fg:#E4E7E0; --muted:#A0A89F; --rule:#323A33;
+  --ocre:#D59448; --monte:#8DB283; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#151916; --surface:#1C211D; --fg:#E4E7E0; --muted:#A0A89F; --rule:#323A33;
+  --ocre:#D59448; --monte:#8DB283; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17.5px;line-height:1.58;margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:clamp(16px,4vw,40px);padding-block:28px 72px;display:grid;gap:clamp(56px,8vw,96px)}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;letter-spacing:-.015em}
+p{margin:0}
+.rot{font-family:var(--mono);font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+a{color:inherit}
+
+/* barra superior */
+.top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px;border-bottom:1px solid var(--rule);padding-bottom:14px}
+.top b{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:0;text-transform:none;color:var(--fg)}
+
+/* portada */
+.portada{display:grid;gap:28px}
+.portada h1{font-size:clamp(56px,13vw,148px);font-weight:700;line-height:.86;letter-spacing:-.04em}
+.portada h1 span{color:var(--ocre)}
+.tesis{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:20px 48px;align-items:end}
+.tesis p{font-size:clamp(20px,2.4vw,26px);line-height:1.35;max-width:34ch}
+.ficha{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;font-family:var(--mono);font-size:12.5px;align-self:start}
+.ficha dt{color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.ficha dd{margin:0}
+figure{margin:0;display:grid;gap:8px;min-width:0}
+figure img,figure video{width:100%;height:auto;display:block;border-radius:2px;max-width:100%}
+figcaption{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.hero img{aspect-ratio:16/8;object-fit:cover;object-position:50% 40%}
+
+/* cifras */
+.cifras{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));border-top:2px solid var(--fg)}
+.cifra{padding:16px 18px 0 0;display:grid;gap:6px;align-content:start}
+.cifra b{font-family:var(--display);font-weight:600;font-size:clamp(40px,5.5vw,60px);line-height:.95;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.cifra b small{font-size:.42em;color:var(--muted);font-weight:500;letter-spacing:0}
+.cifra.u b{color:var(--ocre)}
+.cifra span{font-size:15px;color:var(--muted);max-width:28ch;line-height:1.4}
+
+/* secciones con rótulo lateral */
+.sec{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,3fr);gap:16px 48px}
+.sec > .lado{display:grid;gap:10px;align-content:start}
+.sec > .lado h2{font-size:clamp(26px,3vw,34px);font-weight:600;line-height:1.05}
+.sec > .cuerpo{display:grid;gap:22px;min-width:0}
+.cuerpo > p{max-width:64ch}
+.full{grid-column:1/-1}
+
+/* pares de funciones */
+.dos{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));border-top:1px solid var(--rule)}
+.dos div{padding:16px 20px 16px 0;border-bottom:1px solid var(--rule);display:grid;gap:4px}
+.dos h3{font-size:19px;font-weight:600}
+.dos p{font-size:15.5px;color:var(--muted)}
+.dos p em{font-style:normal;color:var(--fg)}
+
+/* planos: hoja de papel en ambos temas */
+.plano{--fg:var(--ink);--muted:var(--ink-muted);background:var(--paper);color:var(--ink);border:1px solid var(--rule);padding:18px;display:grid;gap:10px;border-radius:2px}
+.plano .rot{color:var(--ink-muted)}
+.plano .scroll{overflow-x:auto}
+.plano svg{display:block;width:100%;height:auto}
+.plano svg text{fill:var(--ink-muted)}
+
+/* galería */
+.galeria{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.galeria img{aspect-ratio:16/9;object-fit:cover}
+
+/* experimentos */
+.exps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:0 32px;counter-reset:none}
+.exps li{display:grid;grid-template-columns:2.4em 1fr;gap:2px 10px;padding:10px 0;border-bottom:1px solid var(--rule);font-size:15px;line-height:1.4}
+.exps li b{font-family:var(--mono);font-weight:500;font-size:13px;color:var(--ocre);padding-top:2px;font-variant-numeric:tabular-nums}
+.exps li small{grid-column:2;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.grupo{font-family:var(--mono);font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--monte);padding-top:18px;grid-column:1/-1;border-bottom:1px solid var(--fg);padding-bottom:6px}
+
+/* giros */
+.giros{display:grid;gap:0;border-top:1px solid var(--rule)}
+.giros div{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2.4fr);gap:6px 28px;padding:18px 0;border-bottom:1px solid var(--rule)}
+.giros h3{font-size:20px;font-weight:600;line-height:1.15}
+.giros p{font-size:16px;max-width:60ch}
+
+.cita{font-family:var(--display);font-weight:500;font-size:clamp(24px,3.2vw,36px);line-height:1.15;letter-spacing:-.02em;max-width:28ch;border-left:3px solid var(--ocre);padding-left:20px}
+
+.tabla{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14.5px;font-variant-numeric:tabular-nums}
+th,td{padding:8px 10px;border-bottom:1px solid var(--rule);text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{font-family:var(--mono);font-size:11.5px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+tr.u td{color:var(--ocre);font-weight:600}
+
+.herr{display:flex;flex-wrap:wrap;gap:8px}
+.herr span{font-family:var(--mono);font-size:12.5px;border:1px solid var(--rule);padding:4px 9px;border-radius:2px}
+.nota{font-size:14.5px;color:var(--muted);max-width:64ch}
+footer{border-top:1px solid var(--rule);padding-top:16px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px}
+
+@media (max-width:760px){
+  .tesis,.sec,.giros div{grid-template-columns:minmax(0,1fr)}
+  .galeria{grid-template-columns:minmax(0,1fr)}
+  .hero img{aspect-ratio:4/3}
+}
+@media (prefers-reduced-motion:reduce){video{animation:none}}
+
+.leyenda{display:flex;flex-wrap:wrap;gap:6px 18px;font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.leyenda i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px;border:1px solid rgba(0,0,0,.25)}
+.plano img{width:100%;height:auto;display:block;max-width:100%}
+.plano figcaption{color:var(--ink-muted)}
+.plantas{grid-template-columns:repeat(2,minmax(0,1fr))}
+.plantas figure:last-child{grid-column:1/-1}
+@media (max-width:760px){.plantas{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="top rot"><a href="../" style="text-decoration:none"><b>← Gustavo Oyuela</b></a><span>Portafolio · Proyecto 02 · Vivienda colectiva</span><span>2026</span></div>
+
+<header class="portada">
+  <h1>La<br><span>Ola</span></h1>
+  <div class="tesis">
+    <dl class="ficha">
+      <dt>Tipo</dt><dd>Vivienda colectiva de uso mixto</dd>
+      <dt>Niveles</dt><dd>9 pisos + 2 sótanos</dd>
+      <dt>Área</dt><dd>≈ 13.200 m² construidos</dd>
+      <dt>Usos</dt><dd>10 programas distintos</dd>
+      <dt>Modelo</dt><dd>Rhino · organizado por capas de programa</dd>
+      <dt>Estado</dt><dd>Volumetría y programa resueltos</dd>
+    </dl>
+    <p>Un edificio donde viven juntos niños, familias y adultos mayores. La vivienda se apila en módulos desplazados sobre un podio de espacios comunes, y una red de corredores y escaleras abiertas los cose a todos.</p>
+  </div>
+  <figure class="plano hero-ola">
+    <img src="img/axo.png" alt="Axonometría de La Ola: módulos de vivienda desplazados sobre un podio de programas comunes y una base de parqueadero">
+    <figcaption>Axonometría por programa, generada desde el modelo de Rhino.</figcaption>
+  </figure>
+  <div class="leyenda" aria-label="Convenciones de programa">
+    <span><i style="background:#B26834"></i>Vivienda</span>
+    <span><i style="background:#CF9654"></i>Vivienda productiva</span>
+    <span><i style="background:#766096"></i>Adulto mayor</span>
+    <span><i style="background:#DB7C68"></i>Guardería</span>
+    <span><i style="background:#DEB846"></i>Comercio y servicios comunes</span>
+    <span><i style="background:#6E965A"></i>Jardín</span>
+    <span><i style="background:#4696A0"></i>Circulación</span>
+    <span><i style="background:#505452"></i>Puntos fijos y parqueadero</span>
+  </div>
+</header>
+
+<section class="cifras" aria-label="Datos principales">
+  <div class="cifra u"><b>4.800<small> m²</small></b><span>de vivienda en seis pisos de módulos desplazados</span></div>
+  <div class="cifra u"><b>4.850<small> m²</small></b><span>de programa común y de cuidado, tanto como la vivienda</span></div>
+  <div class="cifra"><b>10</b><span>usos en un mismo edificio, de la guardería al hogar de adultos mayores</span></div>
+  <div class="cifra"><b>56→16<small> m</small></b><span>largo del corredor central, que se acorta a medida que el edificio sube</span></div>
+</section>
+
+<section class="sec">
+  <div class="lado"><span class="rot">La idea</span><h2>Vivir en el mismo edificio que todo lo demás</h2></div>
+  <div class="cuerpo">
+    <p>La mayoría de los edificios de vivienda resuelve un solo programa y deja lo común en un salón social que nadie usa. La Ola parte de lo contrario: el edificio funciona como un barrio vertical. Abajo, la guardería, el hogar para adultos mayores, la cocina y comedor comunitarios, el comercio, la piscina y el gimnasio. Arriba, la vivienda. En la mitad, la lavandería y el coworking, donde se cruzan los dos mundos.</p>
+    <p>La vivienda productiva, con local hacia la calle y casa encima, deja que quien vive aquí también trabaje aquí.</p>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="lado"><span class="rot">Las capas</span><h2>Base, podio y vivienda</h2><p class="nota">El modelo está organizado por capas de programa, una por uso, y así también se lee el edificio.</p></div>
+  <div class="cuerpo">
+    <div class="dos">
+      <div><h3>Base</h3><p><em>Dos niveles bajo la calle</em> con parqueadero, rampas y la guardería, que recibe luz por un patio.</p></div>
+      <div><h3>Podio</h3><p><em>Tres pisos de programa común</em>: adulto mayor, comercio, cocina comunitaria, jardín, piscina y gimnasio.</p></div>
+      <div><h3>Vivienda</h3><p><em>Seis pisos de módulos</em> de 6,5 × 8, 8 × 8 y 9 × 10,5 m, desplazados entre sí para abrir terrazas y luz.</p></div>
+    </div>
+  </div>
+</section>
+
+<figure class="plano full">
+  <span class="rot">Despiece por capas</span>
+  <img src="img/capas.png" alt="Axonometría explotada en tres capas: base de parqueadero y guardería, podio de programas comunes y bloque de vivienda">
+</figure>
+
+<section class="sec">
+  <div class="lado"><span class="rot">Lo común</span><h2>La mitad del edificio es compartida</h2></div>
+  <div class="cuerpo">
+    <p>Sin la vivienda, queda a la vista lo que sostiene la vida del edificio: el podio de cuidado y servicios, el núcleo de ascensores y los corredores que salen de él en cada piso. Por área, el programa común y de cuidado es igual a la vivienda.</p>
+  </div>
+</section>
+
+<figure class="plano full">
+  <span class="rot">El edificio sin la vivienda</span>
+  <img src="img/comunes.png" alt="Axonometría del edificio sin los módulos de vivienda: podio de programas comunes, núcleo de ascensores y corredores en cada piso">
+</figure>
+
+<section class="sec">
+  <div class="lado"><span class="rot">La circulación</span><h2>Corredores que se acortan al subir</h2></div>
+  <div class="cuerpo">
+    <p>Un núcleo central de ascensores reparte a corredores abiertos de 3 m de ancho. En los primeros pisos el corredor recorre 56 m; arriba, a medida que la vivienda se retrae, baja a 48, 40, 24 y 16 m. Escaleras abiertas entre niveles conectan los corredores sin pasar por el núcleo, para que moverse dentro del edificio sea encontrarse con los vecinos.</p>
+    <figure class="plano"><img src="img/circulacion.png" alt="Diagrama de circulación: núcleo de ascensores, corredores por piso y escaleras abiertas entre niveles"><figcaption>Circulación: núcleo, corredores y escaleras. Lo demás en gris.</figcaption></figure>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="lado"><span class="rot">Plantas</span><h2>Programa piso a piso</h2><p class="nota">Plantas de programa sacadas del modelo volumétrico. Cotas de nivel sobre el acceso.</p></div>
+  <div class="cuerpo plantas">
+    <figure class="plano"><img src="img/planta-n-3.png" alt="Planta del nivel −3,00: guardería y parqueadero"><figcaption>Nivel −3,00 · guardería y parqueadero</figcaption></figure>
+    <figure class="plano"><img src="img/planta-n0.png" alt="Planta del nivel ±0,00: acceso, comercio, guardería y adulto mayor"><figcaption>Nivel ±0,00 · acceso, comercio, guardería</figcaption></figure>
+    <figure class="plano"><img src="img/planta-n2.png" alt="Planta del nivel +6,60: hogar de adulto mayor, cocina y comedor comunitarios"><figcaption>Nivel +6,60 · adulto mayor, cocina y comedor</figcaption></figure>
+    <figure class="plano"><img src="img/planta-n3.png" alt="Planta del nivel +10,30: transición entre podio y vivienda"><figcaption>Nivel +10,30 · lavandería, coworking y primera vivienda</figcaption></figure>
+    <figure class="plano"><img src="img/planta-n5.png" alt="Planta tipo de vivienda en el nivel +16,60 con corredor central"><figcaption>Nivel +16,60 · planta tipo de vivienda</figcaption></figure>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="lado"><span class="rot">Programa</span><h2>Áreas por uso</h2></div>
+  <div class="cuerpo">
+    <div class="tabla"><table>
+      <thead><tr><th>Uso</th><th>Niveles</th><th>Área aprox.</th></tr></thead>
+      <tbody>
+        <tr class="u"><td>Vivienda</td><td>+10,30 a +26,50</td><td>4.800 m²</td></tr>
+        <tr><td>Hogar de adulto mayor y apartamentos</td><td>±0,00 a +10,30</td><td>1.650 m²</td></tr>
+        <tr><td>Comercio, cocina comunitaria, lavandería, coworking, piscina y gimnasio</td><td>±0,00 a +10,30</td><td>1.250 m²</td></tr>
+        <tr><td>Guardería</td><td>−3,00 a +3,30</td><td>1.200 m²</td></tr>
+        <tr><td>Vivienda productiva</td><td>±0,00 a +6,60</td><td>550 m²</td></tr>
+        <tr><td>Jardín</td><td>+3,30</td><td>200 m²</td></tr>
+        <tr><td>Núcleo de ascensores y escaleras</td><td>Todos</td><td>600 m²</td></tr>
+        <tr><td>Parqueadero</td><td>−6,40 a −3,00</td><td>2.850 m²</td></tr>
+      </tbody>
+    </table></div>
+    <p class="nota">Áreas medidas sobre el modelo volumétrico, piso por piso, sin contar muros ni circulación horizontal.</p>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="lado"><span class="rot">El modelo</span><h2>En Rhino, por capas</h2></div>
+  <div class="cuerpo">
+    <div class="galeria">
+      <figure><img src="img/rhino-1.jpg" alt="Vista del modelo en Rhino con los módulos de vivienda, escaleras abiertas y bajantes"><figcaption>Escaleras abiertas entre corredores</figcaption></figure>
+      <figure><img src="img/rhino-2.jpg" alt="Vista general del modelo en Rhino con el podio y la vivienda"><figcaption>Podio y vivienda</figcaption></figure>
+    </div>
+    <figure><img src="img/rhino-3.jpg" alt="Acercamiento al interior del edificio en Rhino: corredores, escaleras y redes verticales"><figcaption>Interior: corredores, escaleras y redes verticales</figcaption></figure>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="lado"><span class="rot">Siguiente paso</span><h2>De la volumetría a la obra</h2></div>
+  <div class="cuerpo">
+    <p>La volumetría, el programa y la circulación están resueltos. Lo que sigue es materialidad, estructura y fachadas, con el mismo método de capas: cada decisión en su propia capa del modelo, medible y revisable.</p>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="lado"><span class="rot">Herramientas</span></div>
+  <div class="cuerpo">
+    <div class="herr"><span>Rhino 8</span><span>Modelado por capas</span><span>Python en Rhino</span><span>Diagramas generados desde el modelo</span></div>
+  </div>
+</section>
+
+<footer class="rot"><b style="font-family:var(--display);font-size:15px;text-transform:none;letter-spacing:0;color:var(--fg)">Gustavo Oyuela</b><span>La Ola · 2026</span></footer>
+</div>
+
+</body>
+</html>
