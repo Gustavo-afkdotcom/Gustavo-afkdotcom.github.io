@@ -142,7 +142,7 @@ footer{border-top:1px solid var(--rule);padding-top:16px;display:flex;flex-wrap:
 <body>
 <div class="wrap">
 
-<div class="top rot"><a href="../" style="text-decoration:none"><b>← Gustavo Oyuela</b></a><span>Portafolio · Proyecto 01 · Investigación de diseño</span><span>2026</span></div>
+<div class="top rot"><a href="../" style="text-decoration:none"><b>← Gustavo Oyuela</b></a><span>Portafolio · Proyecto 01 · Investigación de diseño</span><span><b style="font-size:13px">ES</b> · <a href="en/">EN</a></span><span>2026</span></div>
 
 <header class="portada">
   <h1>Casa<br><span>Umbral</span></h1>
@@ -232,12 +232,13 @@ footer{border-top:1px solid var(--rule);padding-top:16px;display:flex;flex-wrap:
 </section>
 
 <section class="sec" id="revit">
-  <div class="lado"><span class="rot">Documentación técnica · Revit</span><h2>Del modelo paramétrico al set de construcción</h2><p class="nota">Revit 2026 · Dynamo · API de Revit en Python</p></div>
+  <div class="lado"><span class="rot">Documentación técnica · Revit</span><h2>Del modelo paramétrico al set de construcción</h2><p class="nota">Revit 2026 · Dynamo para la geometría base</p></div>
   <div class="cuerpo">
-    <p>La geometría v16.1 pasa de Grasshopper a Revit con un script de Dynamo escrito en Python sobre la API de Revit. El mismo script levanta el modelo BIM completo: niveles y ejes, muros de bloque de tierra, contenciones de gavión, losas, cielos de barro, cubierta plegada, cerchas de guadua, cimentaciones, terreno y circulaciones. Después arma el set de 9 láminas A1 con cajetín propio, cortes, cotas, detalles 1:5 y cuadros. Si cambia un parámetro del diseño, se vuelve a correr y el modelo y los planos se actualizan juntos.</p>
+    <p>La geometría base de v16.1 se trajo de Grasshopper a Revit con Dynamo. Desde ahí el proyecto se desarrolló en Revit como se trabaja en una oficina: muros, losas y cubiertas con sus tipos y capas, familias cargables propias, plantas, cortes y fachadas, llamadas de detalle con vistas de dibujo 1:5, cuadros y un set de 9 láminas A1 con cajetín propio.</p>
+    <p>Dynamo quedó como herramienta para lo repetitivo: colocar 27 ventanas o 399 varas de guadua y mantener el set al día cuando cambia el diseño.</p>
     <div class="cifras">
       <div class="cifra u"><b>9</b><span>láminas A1 de documentos de construcción, de la portada a los cuadros</span></div>
-      <div class="cifra"><b>4</b><span>familias paramétricas propias, creadas desde la API</span></div>
+      <div class="cifra"><b>4</b><span>familias paramétricas propias: ventana, puerta y dos de guadua estructural</span></div>
       <div class="cifra u"><b>399</b><span>varas de guadua (417 m) despiezadas en el cuadro de estructura</span></div>
     </div>
     <div class="dos" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))">
@@ -356,7 +357,7 @@ footer{border-top:1px solid var(--rule);padding-top:16px;display:flex;flex-wrap:
 <section class="sec">
   <div class="lado"><span class="rot">Herramientas</span></div>
   <div class="cuerpo">
-    <div class="herr"><span>Revit 2026</span><span>Dynamo</span><span>API de Revit</span><span>Rhino 8</span><span>Grasshopper</span><span>Ladybug</span><span>Honeybee</span><span>EnergyPlus 24.1</span><span>AirflowNetwork</span><span>Radiance</span><span>Kangaroo</span><span>CFD Lattice Boltzmann</span><span>Embree</span><span>pvlib</span><span>NSGA-II</span><span>Procesos gaussianos</span><span>Python</span><span>NSR-10</span></div>
+    <div class="herr"><span>Revit 2026</span><span>Dynamo</span><span>Rhino 8</span><span>Grasshopper</span><span>Ladybug</span><span>Honeybee</span><span>EnergyPlus 24.1</span><span>AirflowNetwork</span><span>Radiance</span><span>Kangaroo</span><span>CFD Lattice Boltzmann</span><span>Embree</span><span>pvlib</span><span>NSGA-II</span><span>Procesos gaussianos</span><span>Python</span><span>NSR-10</span></div>
   </div>
 </section>
 
