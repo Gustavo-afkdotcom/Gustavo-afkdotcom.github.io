@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="Casa Umbral: casa de tierra en una ladera de Anapoima diseñada a partir de 22 experimentos de física. Portafolio de Gustavo Oyuela.">
+<meta name="description" content="Casa Umbral: casa de tierra en una ladera de Anapoima diseñada a partir de 22 experimentos de física y documentada en Revit. Portafolio de Gustavo Oyuela.">
 <title>Casa Umbral</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -117,6 +117,19 @@ tr.u td{color:var(--ocre);font-weight:600}
 .nota{font-size:14.5px;color:var(--muted);max-width:64ch}
 footer{border-top:1px solid var(--rule);padding-top:16px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px}
 
+
+/* documentación en Revit */
+.set{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.set a{text-decoration:none;display:grid;gap:6px}
+.set img{width:100%;height:auto;display:block;border:1px solid var(--rule);border-radius:2px;background:#fff}
+.set span{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.set span b{color:var(--fg);font-weight:500}
+.lamina img{background:#fff;border:1px solid var(--rule)}
+.dos2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.descarga{display:inline-flex;align-items:center;gap:10px;font-family:var(--display);font-weight:600;font-size:16px;text-decoration:none;border:1.5px solid var(--fg);padding:10px 16px;border-radius:2px;justify-self:start}
+.descarga small{font-family:var(--mono);font-weight:400;font-size:12px;color:var(--muted)}
+@media (max-width:760px){.set{grid-template-columns:repeat(2,minmax(0,1fr))}.dos2{grid-template-columns:minmax(0,1fr)}}
+
 @media (max-width:760px){
   .tesis,.sec,.giros div{grid-template-columns:minmax(0,1fr)}
   .galeria{grid-template-columns:minmax(0,1fr)}
@@ -141,6 +154,7 @@ footer{border-top:1px solid var(--rule);padding-top:16px;display:flex;flex-wrap:
       <dt>Clima</dt><dd>25,7 °C media · 78 % HR</dd>
       <dt>Programa</dt><dd>Familia de 4 · 142 m²</dd>
       <dt>Versión</dt><dd>v16.1 · 22 experimentos</dd>
+      <dt>BIM</dt><dd>Revit 2026 · 9 láminas</dd>
     </dl>
     <p>Una casa de tierra en una ladera de tierra caliente que pasa el 98,6 % del año en confort sin aire acondicionado, y cuya forma sale de la física del lugar.</p>
   </div>
@@ -215,6 +229,52 @@ footer{border-top:1px solid var(--rule);padding-top:16px;display:flex;flex-wrap:
     <figure><img src="img/aerea.jpg" alt="Vista aérea de Casa Umbral con paneles solares en T1"><figcaption>Aérea, 11:10 a. m., con los paneles en T1</figcaption></figure>
   </div>
   <p class="nota">Renders en arcilla con un trazador de rayos propio y el sol real de Anapoima. Son la base geométrica para las imágenes finales: la forma y las sombras ya son las reales.</p>
+</section>
+
+<section class="sec" id="revit">
+  <div class="lado"><span class="rot">Documentación técnica · Revit</span><h2>Del modelo paramétrico al set de construcción</h2><p class="nota">Revit 2026 · Dynamo · API de Revit en Python</p></div>
+  <div class="cuerpo">
+    <p>La geometría v16.1 pasa de Grasshopper a Revit con un script de Dynamo escrito en Python sobre la API de Revit. El mismo script levanta el modelo BIM completo: niveles y ejes, muros de bloque de tierra, contenciones de gavión, losas, cielos de barro, cubierta plegada, cerchas de guadua, cimentaciones, terreno y circulaciones. Después arma el set de 9 láminas A1 con cajetín propio, cortes, cotas, detalles 1:5 y cuadros. Si cambia un parámetro del diseño, se vuelve a correr y el modelo y los planos se actualizan juntos.</p>
+    <div class="cifras">
+      <div class="cifra u"><b>9</b><span>láminas A1 de documentos de construcción, de la portada a los cuadros</span></div>
+      <div class="cifra"><b>4</b><span>familias paramétricas propias, creadas desde la API</span></div>
+      <div class="cifra u"><b>399</b><span>varas de guadua (417 m) despiezadas en el cuadro de estructura</span></div>
+    </div>
+    <div class="dos" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))">
+      <div><h3>Ventana con celosía</h3><p><em>UMB_Ventana_celosia_guadua.</em> Alojada en el muro, corta su propio vano y lleva la celosía de guadua a 0,30 m de la fachada.</p></div>
+      <div><h3>Puerta de baño</h3><p><em>UMB_Puerta_bano.</em> Marco y hoja de madera de medidas fijas para el tabique de guadua de 10 cm, con su arco de giro en planta.</p></div>
+      <div><h3>Guadua estructural</h3><p><em>UMB_Guadua_D10 y D08.</em> Familias de armazón estructural: cada vara de las cerchas es una viga o una riostra con su largo propio.</p></div>
+      <div><h3>Cuadros vivos</h3><p><em>Puertas, ventanas, acabados, muros, materiales y guadua</em> se leen del modelo: si algo cambia, el cuadro cambia.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="full" style="display:grid;gap:14px" aria-label="Láminas del set de Revit">
+  <figure class="lamina"><img src="img/revit/planta-general.jpg" alt="Planta general de las tres terrazas con rayados de materiales y pisos" loading="lazy"><figcaption>A-101 · Planta general de las tres terrazas, 1:50. Cada material de muro y de piso con su rayado.</figcaption></figure>
+  <div class="dos2">
+    <figure class="lamina"><img src="img/revit/corte-por-muro.jpg" alt="Corte por muro de la fachada oeste de T2, de la cubierta a la base del gavión" loading="lazy"><figcaption>A-501 · Corte por muro de la fachada oeste, 1:20: de la cubierta plegada a la base del gavión, con el recorrido del agua en naranja.</figcaption></figure>
+    <figure class="lamina"><img src="img/revit/cimentacion.jpg" alt="Planta de cimentación con ejes, marcas y cuadro de cimentaciones" loading="lazy"><figcaption>A-102 · Planta de cimentación con ejes, marcas, cuadro y detalles típicos 1:25.</figcaption></figure>
+  </div>
+  <figure class="lamina"><img src="img/revit/detalles.jpg" alt="Detalles constructivos 1:5: visera y cadena de lluvia, apoyo de la cercha y anclaje de la celosía" loading="lazy"><figcaption>A-502 · Detalles 1:5: la visera y la cadena de lluvia, el apoyo de la cercha sobre la viga de amarre y el anclaje de la celosía.</figcaption></figure>
+  <figure class="lamina"><img src="img/revit/secuencia.jpg" alt="Secuencia constructiva en cinco etapas con cantidades por etapa" loading="lazy"><figcaption>A-401 · Secuencia constructiva en cinco etapas, con las cantidades de cada una medidas en el modelo.</figcaption></figure>
+</section>
+
+<section class="sec">
+  <div class="lado"><span class="rot">El set completo</span><h2>9 láminas</h2></div>
+  <div class="cuerpo">
+    <div class="set">
+      <a href="docs/Casa_Umbral_Laminas.pdf#page=1"><img src="img/laminas/A-001.jpg" alt="Lámina A-001, Portada" loading="lazy"><span><b>A-001</b> · Portada</span></a>
+      <a href="docs/Casa_Umbral_Laminas.pdf#page=2"><img src="img/laminas/A-101.jpg" alt="Lámina A-101, Plantas T1 – T3" loading="lazy"><span><b>A-101</b> · Plantas T1 – T3</span></a>
+      <a href="docs/Casa_Umbral_Laminas.pdf#page=3"><img src="img/laminas/A-102.jpg" alt="Lámina A-102, Planta de cimentación" loading="lazy"><span><b>A-102</b> · Planta de cimentación</span></a>
+      <a href="docs/Casa_Umbral_Laminas.pdf#page=4"><img src="img/laminas/A-201.jpg" alt="Lámina A-201, Cortes A y B" loading="lazy"><span><b>A-201</b> · Cortes A y B</span></a>
+      <a href="docs/Casa_Umbral_Laminas.pdf#page=5"><img src="img/laminas/A-301.jpg" alt="Lámina A-301, Fachadas sur y oeste" loading="lazy"><span><b>A-301</b> · Fachadas sur y oeste</span></a>
+      <a href="docs/Casa_Umbral_Laminas.pdf#page=6"><img src="img/laminas/A-401.jpg" alt="Lámina A-401, Secuencia constructiva" loading="lazy"><span><b>A-401</b> · Secuencia constructiva</span></a>
+      <a href="docs/Casa_Umbral_Laminas.pdf#page=7"><img src="img/laminas/A-501.jpg" alt="Lámina A-501, Corte por muro" loading="lazy"><span><b>A-501</b> · Corte por muro</span></a>
+      <a href="docs/Casa_Umbral_Laminas.pdf#page=8"><img src="img/laminas/A-502.jpg" alt="Lámina A-502, Detalles constructivos" loading="lazy"><span><b>A-502</b> · Detalles constructivos</span></a>
+      <a href="docs/Casa_Umbral_Laminas.pdf#page=9"><img src="img/laminas/A-601.jpg" alt="Lámina A-601, Cuadros y tablas" loading="lazy"><span><b>A-601</b> · Cuadros y tablas</span></a>
+    </div>
+    <a class="descarga" href="docs/Casa_Umbral_Laminas.pdf" download>Descargar el set en PDF <small>A1 · 9 láminas · 1,5 MB</small></a>
+  </div>
 </section>
 
 <section class="sec">
@@ -296,7 +356,7 @@ footer{border-top:1px solid var(--rule);padding-top:16px;display:flex;flex-wrap:
 <section class="sec">
   <div class="lado"><span class="rot">Herramientas</span></div>
   <div class="cuerpo">
-    <div class="herr"><span>Rhino 8</span><span>Grasshopper</span><span>Ladybug</span><span>Honeybee</span><span>EnergyPlus 24.1</span><span>AirflowNetwork</span><span>Radiance</span><span>Kangaroo</span><span>CFD Lattice Boltzmann</span><span>Embree</span><span>pvlib</span><span>NSGA-II</span><span>Procesos gaussianos</span><span>Python</span><span>NSR-10</span></div>
+    <div class="herr"><span>Revit 2026</span><span>Dynamo</span><span>API de Revit</span><span>Rhino 8</span><span>Grasshopper</span><span>Ladybug</span><span>Honeybee</span><span>EnergyPlus 24.1</span><span>AirflowNetwork</span><span>Radiance</span><span>Kangaroo</span><span>CFD Lattice Boltzmann</span><span>Embree</span><span>pvlib</span><span>NSGA-II</span><span>Procesos gaussianos</span><span>Python</span><span>NSR-10</span></div>
   </div>
 </section>
 
