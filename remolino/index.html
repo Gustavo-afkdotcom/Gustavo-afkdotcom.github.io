@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Remolino: torre de vivienda colectiva y cuidado junto al río Fucha, en Bogotá. El edificio recoge el agua, la baja y la vida sube. Modelo BIM en Revit y recorrido virtual. Portafolio de Gustavo Oyuela.">
+<title>Remolino</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: ficha de proyecto de arquitectura. Columna de rótulos a la izquierda (como el cajetín de un plano), contenido a la derecha; imágenes y planos a todo el ancho. */
+:root{
+  --bg:#E7E9E2;        /* cal sobre tierra, con sesgo verde de bosque seco */
+  --surface:#F1F2EC;
+  --fg:#1C211D;
+  --muted:#5A625B;
+  --rule:#C9CDC3;
+  --ocre:#9A5B17;      /* guadua y bloque de tierra con cal */
+  --monte:#3E5A3A;     /* bosque seco tropical */
+  --paper:#F5F4EE; --ink:#1E2421; --ink-muted:#5E665F;
+  --display:"Familjen Grotesk","Helvetica Neue",Arial,sans-serif;
+  --body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#151916; --surface:#1C211D; --fg:#E4E7E0; --muted:#A0A89F; --rule:#323A33;
+  --ocre:#D59448; --monte:#8DB283; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#151916; --surface:#1C211D; --fg:#E4E7E0; --muted:#A0A89F; --rule:#323A33;
+  --ocre:#D59448; --monte:#8DB283; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17.5px;line-height:1.58;margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:clamp(16px,4vw,40px);padding-block:28px 72px;display:grid;gap:clamp(56px,8vw,96px)}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;letter-spacing:-.015em}
+p{margin:0}
+.rot{font-family:var(--mono);font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+a{color:inherit}
+
+/* barra superior */
+.top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px;border-bottom:1px solid var(--rule);padding-bottom:14px}
+.top b{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:0;text-transform:none;color:var(--fg)}
+
+/* portada */
+.portada{display:grid;gap:28px}
+.portada h1{font-size:clamp(56px,13vw,148px);font-weight:700;line-height:.86;letter-spacing:-.04em}
+.portada h1 span{color:var(--ocre)}
+.tesis{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:20px 48px;align-items:end}
+.tesis p{font-size:clamp(20px,2.4vw,26px);line-height:1.35;max-width:34ch}
+.ficha{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;font-family:var(--mono);font-size:12.5px;align-self:start}
+.ficha dt{color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.ficha dd{margin:0}
+figure{margin:0;display:grid;gap:8px;min-width:0}
+figure img,figure video{width:100%;height:auto;display:block;border-radius:2px;max-width:100%}
+figcaption{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.hero img{aspect-ratio:16/8;object-fit:cover;object-position:50% 40%}
+
+/* cifras */
+.cifras{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));border-top:2px solid var(--fg)}
+.cifra{padding:16px 18px 0 0;display:grid;gap:6px;align-content:start}
+.cifra b{font-family:var(--display);font-weight:600;font-size:clamp(40px,5.5vw,60px);line-height:.95;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.cifra b small{font-size:.42em;color:var(--muted);font-weight:500;letter-spacing:0}
+.cifra.u b{color:var(--ocre)}
+.cifra span{font-size:15px;color:var(--muted);max-width:28ch;line-height:1.4}
+
+/* secciones con rótulo lateral */
+.sec{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,3fr);gap:16px 48px}
+.sec > .lado{display:grid;gap:10px;align-content:start}
+.sec > .lado h2{font-size:clamp(26px,3vw,34px);font-weight:600;line-height:1.05}
+.sec > .cuerpo{display:grid;gap:22px;min-width:0}
+.cuerpo > p{max-width:64ch}
+.full{grid-column:1/-1}
+
+/* pares de funciones */
+.dos{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));border-top:1px solid var(--rule)}
+.dos div{padding:16px 20px 16px 0;border-bottom:1px solid var(--rule);display:grid;gap:4px}
+.dos h3{font-size:19px;font-weight:600}
+.dos p{font-size:15.5px;color:var(--muted)}
+.dos p em{font-style:normal;color:var(--fg)}
+
+/* planos: hoja de papel en ambos temas */
+.plano{--fg:var(--ink);--muted:var(--ink-muted);background:var(--paper);color:var(--ink);border:1px solid var(--rule);padding:18px;display:grid;gap:10px;border-radius:2px}
+.plano .rot{color:var(--ink-muted)}
+.plano .scroll{overflow-x:auto}
+.plano svg{display:block;width:100%;height:auto}
+.plano svg text{fill:var(--ink-muted)}
+
+/* galería */
+.galeria{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.galeria img{aspect-ratio:16/9;object-fit:cover}
+
+/* experimentos */
+.exps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:0 32px;counter-reset:none}
+.exps li{display:grid;grid-template-columns:2.4em 1fr;gap:2px 10px;padding:10px 0;border-bottom:1px solid var(--rule);font-size:15px;line-height:1.4}
+.exps li b{font-family:var(--mono);font-weight:500;font-size:13px;color:var(--ocre);padding-top:2px;font-variant-numeric:tabular-nums}
+.exps li small{grid-column:2;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.grupo{font-family:var(--mono);font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--monte);padding-top:18px;grid-column:1/-1;border-bottom:1px solid var(--fg);padding-bottom:6px}
+
+/* giros */
+.giros{display:grid;gap:0;border-top:1px solid var(--rule)}
+.giros div{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2.4fr);gap:6px 28px;padding:18px 0;border-bottom:1px solid var(--rule)}
+.giros h3{font-size:20px;font-weight:600;line-height:1.15}
+.giros p{font-size:16px;max-width:60ch}
+
+.cita{font-family:var(--display);font-weight:500;font-size:clamp(24px,3.2vw,36px);line-height:1.15;letter-spacing:-.02em;max-width:28ch;border-left:3px solid var(--ocre);padding-left:20px}
+
+.tabla{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14.5px;font-variant-numeric:tabular-nums}
+th,td{padding:8px 10px;border-bottom:1px solid var(--rule);text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{font-family:var(--mono);font-size:11.5px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+tr.u td{color:var(--ocre);font-weight:600}
+
+.herr{display:flex;flex-wrap:wrap;gap:8px}
+.herr span{font-family:var(--mono);font-size:12.5px;border:1px solid var(--rule);padding:4px 9px;border-radius:2px}
+.nota{font-size:14.5px;color:var(--muted);max-width:64ch}
+footer{border-top:1px solid var(--rule);padding-top:16px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px}
+
+
+/* documentación en Revit */
+.set{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.set a{text-decoration:none;display:grid;gap:6px}
+.set img{width:100%;height:auto;display:block;border:1px solid var(--rule);border-radius:2px;background:#fff}
+.set span{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.set span b{color:var(--fg);font-weight:500}
+.lamina img{background:#fff;border:1px solid var(--rule)}
+.dos2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.descarga{display:inline-flex;align-items:center;gap:10px;font-family:var(--display);font-weight:600;font-size:16px;text-decoration:none;border:1.5px solid var(--fg);padding:10px 16px;border-radius:2px;justify-self:start}
+.descarga small{font-family:var(--mono);font-weight:400;font-size:12px;color:var(--muted)}
+@media (max-width:760px){.set{grid-template-columns:repeat(2,minmax(0,1fr))}.dos2{grid-template-columns:minmax(0,1fr)}}
+
+@media (max-width:760px){
+  .tesis,.sec,.giros div{grid-template-columns:minmax(0,1fr)}
+  .galeria{grid-template-columns:minmax(0,1fr)}
+  .hero img{aspect-ratio:4/3}
+}
+@media (prefers-reduced-motion:reduce){video{animation:none}}
+</style><style>
+.ir{display:inline-flex;align-items:center;gap:8px;font-family:var(--display);font-weight:600;font-size:17px;text-decoration:none;border:1.5px solid var(--fg);padding:10px 18px;border-radius:2px;justify-self:start}
+.ir:hover,.ir:focus-visible{background:var(--fg);color:var(--bg);outline:none}
+.ir.acento{border-color:var(--ocre);color:var(--ocre)}.ir.acento:hover{background:var(--ocre);color:var(--bg)}
+.tabla{width:100%;border-collapse:collapse;font-size:15px}
+.tabla th{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;font-weight:500;padding:8px 12px 8px 0;border-bottom:1px solid var(--fg)}
+.tabla td{text-align:left;padding:9px 12px 9px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+.tabla td:first-child{font-family:var(--mono);font-size:13px;white-space:nowrap;color:var(--ocre)}
+.plano img{background:#fff}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="top rot"><a href="../" style="text-decoration:none"><b>← Gustavo Oyuela</b></a><span>Portafolio · Proyecto 02 · Vivienda colectiva</span><span>Bogotá · río Fucha</span><span>2026</span></div>
+
+<header class="portada">
+  <h1>Remo<span>lino</span></h1>
+  <div class="tesis">
+    <dl class="ficha">
+      <dt>Lugar</dt><dd>San Cristóbal, Bogotá · ronda del río Fucha</dd>
+      <dt>Uso</dt><dd>Vivienda, cuidado de niños y mayores, comida de barrio</dd>
+      <dt>Niveles</dt><dd>Sótano + 11 pisos · cubierta a +38,88</dd>
+      <dt>Módulo</dt><dd>Entrepiso de 3,24 m · retícula de 8 × 8</dd>
+      <dt>Viviendas</dt><dd>14 dúplex · 3 individuales · 5 de mayores · 2 de trabajadores</dd>
+      <dt>BIM</dt><dd>Revit 2026 · Dynamo · recorrido web</dd>
+    </dl>
+    <p>Una torre que recoge el agua de lluvia y la deja bajar a la vista, matera por matera, hasta el río. Mientras el agua baja, la vida sube: el cuidado abajo, el barrio en el medio y las huertas arriba.</p>
+  </div>
+  <figure class="hero">
+    <img src="img/aerea.jpg" alt="Vista aérea de Remolino desde el noroccidente: la torre envuelta en una cinta de listones de madera, la gradería y la cascada que bajan al río Fucha y el metrocable pasando sobre el río">
+    <figcaption>Vista desde el noroccidente, sobre el río. Captura del recorrido web, hecho con el modelo de Revit.</figcaption>
+  </figure>
+  <a class="ir acento" href="recorrido/">Recorrer la torre →</a>
+</header>
+
+<section class="cifras" aria-label="Datos principales">
+  <div class="cifra u"><b>342<small> m</small></b><span>de cinta de madera y acero que envuelve la torre subiendo 3,24 m por fachada</span></div>
+  <div class="cifra"><b>9</b><span>esquinas terraza, una por piso, cada una con un uso común distinto</span></div>
+  <div class="cifra u"><b>31<small> m³</small></b><span>de cisterna de lluvia: el agua que se ve en el edificio es siempre lluvia filtrada</span></div>
+  <div class="cifra"><b>24</b><span>viviendas sobre un podio de cuidado de día, cocina comunitaria y comedor de barrio</span></div>
+</section>
+
+<section class="sec">
+  <div class="lado"><span class="rot">El lugar</span><h2>La portada mira al río</h2></div>
+  <div class="cuerpo">
+    <p>El río Fucha atraviesa buena parte de Bogotá y la ciudad está empezando a mirarlo de nuevo. Por su ronda suben una ciclorruta, un camino peatonal y un metrocable que vienen desde el occidente. Remolino se pega a ese proyecto: la fachada occidental es la portada para quien sube por el río, y la esquina noroccidental es de los puntos más bajos de la cubierta, un gesto de reverencia hacia el agua.</p>
+    <p>Al oriente hay un edificio de veinte pisos con muchas ventanas. Al sur sigue el barrio. Cada fachada responde a lo que tiene enfrente, y eso es lo que le da carácter propio a cada una.</p>
+  </div>
+</section>
+
+<figure class="full"><img src="img/portada-fucha.jpg" alt="La torre vista desde la alameda del río Fucha, con la gradería que baja al río y los árboles del patio" loading="lazy"><figcaption>Desde la alameda junto al río: la gradería, la cascada escalonada y, arriba, la linterna de niebla de la esquina noroccidental.</figcaption></figure>
+
+<section class="sec">
+  <div class="lado"><span class="rot">La idea</span><h2>El agua baja, la vida sube</h2></div>
+  <div class="cuerpo">
+    <p>Una vía colectiva de escaleras y materas envuelve la torre como una espiral. La lluvia que cae en la cubierta y en las huertas baja de matera en matera: cada una riega la de abajo y la desborda por un tubo de 2 pulgadas, con un metro de traslapo para que el desagüe siempre quede alineado. Se oye caer desde adentro.</p>
+    <div class="dos">
+      <div><h3>Abajo · agua</h3><p><em>P1 y P2.</em> Cuidado de día de niños y mayores, patio intergeneracional, cocina comunitaria y comedor de barrio.</p></div>
+      <div><h3>En medio · comunidad</h3><p><em>P3 a P7.</em> Residencia de mayores en un nivel, vivienda de los trabajadores del edificio y los primeros dúplex.</p></div>
+      <div><h3>Arriba · cielo</h3><p><em>P8 a la cubierta.</em> Dúplex más privados, asaderos y mirador, y huertas donde los vecinos cambian lo que cosechan.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="plano full" aria-label="Ciclo del agua">
+  <span class="rot">Ciclo del agua · sobre el corte A-A del modelo de Revit</span>
+  <figure><img src="img/ciclo-agua.png" alt="Corte sur-norte de la torre con el recorrido del agua en naranja: lluvia en la cubierta, materas en cascada, bajante, cisterna, bombeo, borde de agua y cascada escalonada al río; las aguas grises van a un humedal técnico y las negras al alcantarillado" loading="lazy"><figcaption>El agua que se ve es solo lluvia filtrada. Las aguas grises pasan por un humedal técnico y salen enterradas al río; las negras van al alcantarillado.</figcaption></figure>
+</section>
+
+<section class="sec">
+  <div class="lado"><span class="rot">El sótano</span><h2>Una piscina que mira al río</h2></div>
+  <div class="cuerpo">
+    <p>La piscina queda en el sótano, a 5,7 m sobre el río, y se abre a él con un muro de vidrio. Delante del vidrio solo hay un borde de agua y una cascada de roca que baja en ocho escalones hasta la alameda: todo queda por debajo de la línea entre los ojos del nadador y el río. El gimnasio la mira a través de otro vidrio.</p>
+    <p>Si el río crece, lo primero que se inunda es el parque: la alameda y la cascada están pensadas para recibir el agua. Al pie del vidrio hay una barrera antiinundación que sube sola, flotando, y todas las salidas al río llevan una válvula antirretorno.</p>
+  </div>
+</section>
+
+<figure class="full"><img src="img/piscina.jpg" alt="Interior del sótano: la piscina en primer plano y el muro de vidrio que se abre hacia la ronda del río" loading="lazy"><figcaption>Desde el borde de la piscina hacia el norte.</figcaption></figure>
+
+<section class="sec">
+  <div class="lado"><span class="rot">La fachada</span><h2>Una cinta que respira según lo que hay detrás</h2></div>
+  <div class="cuerpo">
+    <p>Una cinta de 6 m de alto envuelve la torre siguiendo la espiral: arranca recta y a nivel sobre la fachada norte, sube 3,24 m por fachada con esquinas curvas de 2 m de radio y remata, otra vez a nivel, sobre dos módulos de la occidental. No lleva vidrio a la vista, para que los pájaros no se estrellen: son listones verticales de madera inmunizada y, cada 1,50 m, una pletina hueca de acero que sostiene la cinta desde el voladizo de la matera. Detrás de la madera, a la sombra, una baranda de vidrio laminado de 1,10 m hace la protección.</p>
+    <p>El ritmo no es constante. Se abre frente a las franjas de ventanas y se cierra frente al ladrillo, y el rango cambia con la orientación. Las pletinas llevan boquillas que botan niebla hacia la cámara entre la cinta y la fachada, con el agua lluvia ya filtrada: la nube es la prueba visible de que el agua está limpia.</p>
+    <table class="tabla">
+      <thead><tr><th>Fachada</th><th>Luz entre listones</th><th>Por qué</th></tr></thead>
+      <tbody>
+        <tr><td>Norte</td><td>0,30 – 0,60 m · listón de frente</td><td>Es la vista al río: la más abierta.</td></tr>
+        <tr><td>Sur</td><td>0,22 – 0,45 m · giro de 15°</td><td>El barrio y el sol del día.</td></tr>
+        <tr><td>Occidente</td><td>0,15 – 0,35 m · giro de 30°</td><td>La portada y el sol fuerte de la tarde.</td></tr>
+        <tr><td>Oriente</td><td>0,12 – 0,30 m · giro de 45°</td><td>Privacidad frente al edificio de veinte pisos.</td></tr>
+      </tbody>
+    </table>
+    <p>Detrás de la cinta, la fachada ortogonal sigue una regla de composición: columna de concreto a la vista, franja de ventana de 1,50 m hundida 0,50 m con fondo de graniplast café, paño de ladrillo y otra franja. Las franjas se alinean de piso a piso y doblan las esquinas.</p>
+  </div>
+</section>
+
+<section class="plano full" aria-label="Desarrollo de la cinta">
+  <span class="rot">Desarrollo de la cinta · 342 m · 692 listones de madera y 228 pletinas de acero · la franja azul es la baranda de vidrio</span>
+  <figure><img src="img/cinta.png" alt="La cinta desenrollada en tres tramos: listones verticales que se abren en la fachada norte y se cierran en la oriental, subiendo en espiral" loading="lazy"><figcaption>La cinta desenrollada, de su arranque en la fachada norte a su remate en la occidental. El ritmo de los listones sale de la fachada y de lo que hay detrás.</figcaption></figure>
+</section>
+
+<section class="sec">
+  <div class="lado"><span class="rot">Las esquinas</span><h2>Nueve terrazas tejidas</h2></div>
+  <div class="cuerpo">
+    <p>Donde la espiral dobla, cada piso deja libre un módulo de esquina de 8 × 8 m. Son los hitos del edificio: terrazas comunes cubiertas por un cielo tejido de madera, y el uso de cada una sale de su orientación, su altura y de quién vive cerca.</p>
+    <table class="tabla">
+      <thead><tr><th>Esquina</th><th>Uso</th></tr></thead>
+      <tbody>
+        <tr><td>P3 · SE</td><td>Jardín sensorial de mayores, con huerta en mesas a 0,80 y sol de la mañana.</td></tr>
+        <tr><td>P4 · SO</td><td>Lavandería y tendedero comunal: el calor del occidente seca la ropa.</td></tr>
+        <tr><td>P5 · NO</td><td>Jardín de niebla. Es la imagen del proyecto desde el río y el metrocable.</td></tr>
+        <tr><td>P6 · NE</td><td>Ludoteca para las familias de los dúplex, cerrada hacia el edificio vecino.</td></tr>
+        <tr><td>P7 · SE</td><td>Vivero y banco de semillas para las huertas.</td></tr>
+        <tr><td>P8 · SO</td><td>Invernadero comunal.</td></tr>
+        <tr><td>P9 · NO</td><td>Asaderos y mirador, abiertos al cielo: el humo sale y el río se ve entero.</td></tr>
+        <tr><td>P10 · NE</td><td>Estudio al aire libre para quienes viven arriba.</td></tr>
+        <tr><td>P11 · SE</td><td>Terraza de los dúplex de arriba, abierta al cielo.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="lado"><span class="rot">Habitar</span><h2>Un recorrido que se carga al entrar</h2></div>
+  <div class="cuerpo">
+    <p>El recorrido web usa la geometría del modelo de Revit. Para que sea liviano, las viviendas no están amobladas una por una: cuando el visitante cruza la puerta de una, se carga un interior tipo y se ubica en esa vivienda. Las ventanas quedan en las franjas reales de su fachada, así que lo que se ve afuera (el río, el barrio, la cinta o el edificio vecino) depende del piso y de la orientación de la vivienda que se visita.</p>
+    <p>El dúplex tiene la sala a doble altura con la ventana de piso a techo. La cocina y el comedor quedan bajo el mezanine, y arriba están la habitación y el estudio.</p>
+    <a class="ir acento" href="recorrido/">Recorrer la torre →</a>
+  </div>
+</section>
+
+<figure class="full"><img src="img/duplex.jpg" alt="Interior de un dúplex del piso 7 hacia el norte: la sala con la ventana de doble altura y una ventana de habitación al lado" loading="lazy"><figcaption>Dúplex del piso 7 hacia el norte, dentro del recorrido.</figcaption></figure>
+
+<section class="sec">
+  <div class="lado"><span class="rot">Proceso</span><h2>De la idea al modelo BIM</h2></div>
+  <div class="cuerpo">
+    <p>La volumetría y las plantas se estudiaron en Rhino. La geometría base se trajo a Revit con Dynamo y desde ahí el edificio se modeló y se documentó en Revit: niveles en módulo de 3,24 m, muros y placas por tipo, familias de matera, materiales, topografía con toposólidos y el corte del agua. El mismo modelo alimenta el recorrido web.</p>
+    <div class="dos">
+      <div><h3>Revit</h3><p><em>Modelo y documentación:</em> placas, muros, ventanas, familias de matera, materiales y cortes.</p></div>
+      <div><h3>Dynamo</h3><p><em>Geometría base:</em> la espiral, la cinta y sus listones, y la regla de franjas de la fachada.</p></div>
+      <div><h3>Web</h3><p><em>Recorrido:</em> la geometría exportada del modelo, recorrida en el navegador con three.js.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="plano full" aria-label="Corte A-A">
+  <span class="rot">Corte A-A · sur-norte · modelo de Revit</span>
+  <figure><img src="img/corte-a.png" alt="Corte sur-norte de la torre desde el barrio hasta el río Fucha, con el sótano, la cascada escalonada y la ronda" loading="lazy"><figcaption>Del barrio, a la izquierda, al río, a la derecha.</figcaption></figure>
+</section>
+
+<footer class="rot" style="border-top:1px solid var(--rule);padding-top:16px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px"><a href="../">← Volver al portafolio</a><span>Gustavo Oyuela · Bogotá · 2026</span></footer>
+</div>
+</body>
+</html>

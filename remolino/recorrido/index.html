@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Remolino · recorrido</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--fg:#F1F2EC;--muted:#B9BFB5;--ocre:#E8731A;--panel:rgba(21,25,22,.78);--rule:rgba(241,242,236,.18);
+  --display:"Familjen Grotesk","Helvetica Neue",Arial,sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:#151916;color:var(--fg);font-family:var(--display)}
+canvas{display:block;outline:none}
+.hud{position:fixed;pointer-events:none;inset:0;display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto 1fr auto;padding:14px;gap:12px}
+.panel{pointer-events:auto;background:var(--panel);backdrop-filter:blur(6px);border:1px solid var(--rule);border-radius:3px;padding:12px 14px}
+.rot{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+#titulo{grid-column:1;grid-row:1;display:grid;gap:4px;max-width:330px}
+#titulo h1{margin:0;font-size:26px;letter-spacing:-.02em;line-height:1}
+#titulo h1 span{color:var(--ocre)}
+#titulo a{color:var(--muted);font-family:var(--mono);font-size:11px}
+#lugar{grid-column:1;grid-row:3;align-self:end;display:grid;gap:3px;min-width:260px;max-width:360px}
+#lugar b{font-size:18px;font-weight:600}
+#lugar .dato{font-family:var(--mono);font-size:12px;color:var(--muted)}
+#lugar .uso{font-size:14px;line-height:1.35;color:var(--fg)}
+#menu{grid-column:3;grid-row:1 / span 2;align-self:start;display:grid;gap:10px;width:236px;max-height:calc(100vh - 120px);overflow:auto}
+#menu button{all:unset;cursor:pointer;display:block;padding:6px 8px;border-radius:2px;font-size:14px;line-height:1.25}
+#menu button:hover,#menu button:focus-visible{background:rgba(232,115,26,.18);outline:none}
+#menu .pisos{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+#menu .pisos button{text-align:center;font-family:var(--mono);font-size:12px;border:1px solid var(--rule);padding:5px 0}
+#ayuda{grid-column:2 / span 2;grid-row:3;justify-self:end;align-self:end;font-family:var(--mono);font-size:11.5px;color:var(--muted);line-height:1.6;max-width:560px}
+#ayuda kbd{font-family:var(--mono);border:1px solid var(--rule);border-radius:2px;padding:0 4px;color:var(--fg)}
+#carga{position:fixed;inset:0;display:grid;place-items:center;background:#151916;z-index:5;transition:opacity .6s}
+#carga div{display:grid;gap:10px;width:min(420px,80vw)}
+#carga .barra{height:3px;background:var(--rule)}#carga .barra i{display:block;height:100%;width:0;background:var(--ocre);transition:width .2s}
+#aviso{position:fixed;left:50%;top:18%;transform:translateX(-50%);pointer-events:none;background:var(--panel);border:1px solid var(--ocre);padding:10px 16px;border-radius:3px;font-size:15px;opacity:0;transition:opacity .4s}
+</style>
+<script type="importmap">{"imports":{"three":"./lib/three.module.min.js","three-mesh-bvh":"./lib/three-mesh-bvh.js"}}</script>
+</head>
+<body>
+<div id="carga"><div><span class="rot">Remolino · cargando el modelo de Revit</span><div class="barra"><i id="cbar"></i></div><span class="rot" id="ctxt">geometría</span></div></div>
+<div class="hud">
+  <div id="titulo" class="panel"><span class="rot">Recorrido · vivienda colectiva · río Fucha</span><h1>Remo<span>lino</span></h1><a href="../">← volver al proyecto</a></div>
+  <div id="menu" class="panel">
+    <span class="rot">Ir a</span>
+    <div id="lugares"></div>
+    <span class="rot">Ascensor</span>
+    <div class="pisos" id="pisos"></div>
+    <span class="rot">Entrar a una vivienda</span>
+    <div id="viviendas"></div>
+  </div>
+  <div id="lugar" class="panel"><span class="rot" id="lrot">Dónde estás</span><b id="lnom">—</b><span class="dato" id="ldat"></span><span class="uso" id="luso"></span></div>
+  <div id="ayuda" class="panel"><kbd>W A S D</kbd> caminar · <kbd>Shift</kbd> correr · arrastrar para mirar · clic en el piso para ir · <kbd>rueda</kbd> acercar la cámara (al fondo: primera persona) · <kbd>F</kbd> modo libre · <kbd>Espacio</kbd> subir en modo libre</div>
+</div>
+<div id="aviso"></div>
+<script type="module">
+import * as THREE from 'three';
+import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
+THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
+THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree;
+THREE.Mesh.prototype.raycast = acceleratedRaycast;
+
+// ---------- escena ----------
+const renderer = new THREE.WebGLRenderer({antialias:true, preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.prepend(renderer.domElement);
+const scene = new THREE.Scene();
+const CIELO = new THREE.Color('#c9d6db');
+scene.fog = new THREE.Fog(CIELO, 90, 420);
+const camera = new THREE.PerspectiveCamera(62, innerWidth/innerHeight, 0.08, 1500);
+// cielo de gradiente
+{ const g = new THREE.SphereGeometry(900, 32, 16);
+  const m = new THREE.ShaderMaterial({side:THREE.BackSide, depthWrite:false, fog:false, uniforms:{a:{value:new THREE.Color('#7f9fb3')}, b:{value:CIELO}, c:{value:new THREE.Color('#e6d9c4')}},
+    vertexShader:'varying vec3 p; void main(){ p = normalize(position); gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0);} ',
+    fragmentShader:'varying vec3 p; uniform vec3 a; uniform vec3 b; uniform vec3 c; void main(){ float h=p.y; vec3 col = h>0.0 ? mix(b,a,pow(h,0.6)) : mix(b,c,min(1.0,-h*4.0)); gl_FragColor=vec4(col,1.0);} '});
+  const s = new THREE.Mesh(g, m); s.renderOrder = -1; scene.add(s); }
+scene.add(new THREE.HemisphereLight('#dfe8ee', '#5b5246', 1.25));
+const sol = new THREE.DirectionalLight('#fff1dc', 2.6);
+sol.position.set(-70, 95, 40); sol.target.position.set(18, 10, -30);
+sol.castShadow = true; sol.shadow.mapSize.set(4096, 4096);
+Object.assign(sol.shadow.camera, {left:-75, right:75, top:75, bottom:-75, near:10, far:260}); sol.shadow.bias = -0.0004; sol.shadow.normalBias = 0.04;
+scene.add(sol, sol.target);
+// suelo lejano: al sur a nivel de calle; al norte, la ronda baja hacia el cauce del Fucha (-10)
+{ const sueloM = new THREE.MeshStandardMaterial({color:'#7a8a68', roughness:1});
+  const plano = (x0, z0, x1, z1, y, m=sueloM) => { const p = new THREE.Mesh(new THREE.PlaneGeometry(x1-x0, z1-z0), m); p.rotation.x = -Math.PI/2; p.position.set((x0+x1)/2, y, (z0+z1)/2); p.receiveShadow = true; scene.add(p); };
+  plano(-1500, -51.5, 1500, 1500, -0.06);
+  plano(-1500, -72, 1500, -51.5, -8.06); plano(-1500, -1500, 1500, -87, -8.06);
+  plano(-1500, -87, 1500, -72, -10.02, new THREE.MeshStandardMaterial({color:'#5d7d86', roughness:.2, metalness:.15}));
+  plano(-1500, -87.5, 1500, -71.5, -11.2, new THREE.MeshStandardMaterial({color:'#4a4436', roughness:1})); }
+// coordenadas: Revit (x este, y norte, z arriba, metros) -> three (x, z, -y)
+const W = (x, y, z) => new THREE.Vector3(x, z, -y);
+
+// ---------- texturas de canvas ----------
+function tex(draw, n=256, rep=1){ const c=document.createElement('canvas'); c.width=c.height=n; const g=c.getContext('2d'); draw(g,n);
+  const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=8; t.repeat.set(rep,rep); return t; }
+const ruido=(g,n,base,amp,k=4000)=>{ g.fillStyle=base; g.fillRect(0,0,n,n); for(let i=0;i<k;i++){ const v=(Math.random()-.5)*amp; g.fillStyle=`rgba(${v>0?255:0},${v>0?255:0},${v>0?255:0},${Math.abs(v)})`; g.fillRect(Math.random()*n,Math.random()*n,2,2);} };
+const T = {
+  ladrillo: tex((g,n)=>{ g.fillStyle='#d8cfc2'; g.fillRect(0,0,n,n); const h=n/8, w=n/4; for(let r=0;r<8;r++) for(let c=-1;c<5;c++){ const x=c*w+(r%2)*w/2; const t=0.9+Math.random()*0.2; g.fillStyle=`rgb(${168*t|0},${84*t|0},${52*t|0})`; g.fillRect(x+2,r*h+2,w-4,h-4);} }, 256, 1),
+  madera: tex((g,n)=>{ g.fillStyle='#9a6a3e'; g.fillRect(0,0,n,n); for(let i=0;i<70;i++){ g.strokeStyle=`rgba(60,35,15,${Math.random()*.35})`; g.lineWidth=1+Math.random()*2; const x=Math.random()*n; g.beginPath(); g.moveTo(x,0); g.bezierCurveTo(x+8,n*.3,x-8,n*.6,x+4,n); g.stroke(); } }, 256, 1),
+  concreto: tex((g,n)=>ruido(g,n,'#a7a59f',.12,9000), 256, 1),
+  graniplast: tex((g,n)=>ruido(g,n,'#76563f',.25,16000), 256, 1),
+  pasto: tex((g,n)=>ruido(g,n,'#6f8a4e',.3,14000), 256, 1),
+  tierra: tex((g,n)=>ruido(g,n,'#7b6a52',.25,12000), 256, 1),
+  piso: tex((g,n)=>{ g.fillStyle='#c9a77c'; g.fillRect(0,0,n,n); for(let i=0;i<8;i++){ g.fillStyle=`rgba(80,50,20,${.05+Math.random()*.08})`; g.fillRect(0,i*n/8,n,n/8-2);} }, 256, 1),
+};
+// escala de textura en metros por repeticion
+const ESCALA = {ladrillo:1.0, madera:0.6, concreto:3, graniplast:1.2, pasto:6, tierra:5, piso:2};
+function mat(o){ return new THREE.MeshStandardMaterial(Object.assign({roughness:.85, metalness:0}, o)); }
+function estilo(k, info){
+  const m = info.mat || '', c = info.cat || '';
+  const col = new THREE.Color(`rgb(${info.color.join(',')})`);
+  if (/Vidrio|Glass/i.test(m) || c==='Curtain Panels' && /Glass/.test(m)) return {m: mat({color:'#a9c6cf', roughness:.08, metalness:.1, transparent:true, opacity:.28, depthWrite:false}), choque:false, sombra:false, vidrio:true};
+  if (/Agua/i.test(m)) return {m: mat({color:'#4f8fa3', roughness:.12, metalness:.15, transparent:true, opacity:.82}), choque:true};
+  if (/Ladrillo/.test(m)) return {m: mat({map:T.ladrillo, color:'#ffffff'}), t:'ladrillo', choque:true};
+  if (/Madera|Wood/.test(m)) return {m: mat({map:T.madera, color:'#ffffff', roughness:.7}), t:'madera', choque:!/Curtain|Ceilings|Roofs|Windows/.test(c)};
+  if (/Graniplast/.test(m)) return {m: mat({map:T.graniplast, color:'#ffffff'}), t:'graniplast', choque:true};
+  if (/Acero|Aluminum/.test(m)) return {m: mat({color: /Aluminum/.test(m)?'#9aa0a3':'#4b4f53', roughness:.45, metalness:.6}), choque:!/Mullions/.test(c)};
+  if (/Concret|Concrete/.test(m)) return {m: mat({map:T.concreto, color:'#ffffff'}), t:'concreto', choque:true};
+  if (/Roca/.test(m)) return {m: mat({map:T.concreto, color:'#8c877d', roughness:.95}), t:'concreto', choque:true};
+  if (/Earth/.test(m) || c==='Toposolid') return {m: mat({map:T.pasto, color:'#ffffff'}), t:'pasto', choque:true};
+  if (/Sustrato/.test(m)) return {m: mat({map:T.tierra, color:'#ffffff'}), t:'tierra', choque:true};
+  if (c==='Planting') return {m: mat({color: /PVC/.test(m)?'#8b8f88':/HDPE/.test(m)?'#2e302d':'#5f7d45', roughness:.95}), choque:true};
+  if (c==='Mass') return {m: mat({color:'#c9c7c0'}), choque:true};
+  if (c==='Floors' || c==='Stairs' || c==='Site' || c==='Ramps') return {m: mat({map:T.concreto, color:'#d9d6cf'}), t:'concreto', choque:true};
+  if (c==='Walls') return {m: mat({color:'#ecebe5', roughness:.9}), choque:true};
+  if (c==='Furniture') return {m: mat({color: col}), choque:false};
+  if (c==='Ceilings' || c==='Roofs') return {m: mat(/Default/.test(m) ? {map:T.concreto, color:'#d9d6cf'} : {color: col}), choque:/Default/.test(m)};
+  return {m: mat({color: col}), choque: !/Curtain|Mullions|Windows|Railings/.test(c)};
+}
+// UV triplanar en metros
+function uvTriplanar(geo, escala){
+  const p = geo.attributes.position.array, n = geo.attributes.normal.array, uv = new Float32Array(p.length/3*2);
+  for (let i=0, j=0; i<p.length; i+=3, j+=2){
+    const ax=Math.abs(n[i]), ay=Math.abs(n[i+1]), az=Math.abs(n[i+2]);
+    if (ay>=ax && ay>=az){ uv[j]=p[i]/escala; uv[j+1]=p[i+2]/escala; }
+    else if (ax>=az){ uv[j]=p[i+2]/escala; uv[j+1]=p[i+1]/escala; }
+    else { uv[j]=p[i]/escala; uv[j+1]=p[i+1]/escala; }
+  }
+  geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+}
+// vacio de la vivienda activa: lo que el modelo tiene adentro se oculta y se reemplaza por el interior tipo
+const VACIO = {uMin:{value:new THREE.Vector3(1e6,1e6,1e6)}, uMax:{value:new THREE.Vector3(1e6,1e6,1e6)},
+  // la placa del S1 se abre sobre la piscina (x 6.30-29.50, y 44.80-50.50)
+  pMin:{value:new THREE.Vector3(6.3, -4.38, -50.5)}, pMax:{value:new THREE.Vector3(29.5, -4.0, -44.8)}};
+function conVacio(m){
+  m.onBeforeCompile = sh => {
+    sh.uniforms.uMin = VACIO.uMin; sh.uniforms.uMax = VACIO.uMax; sh.uniforms.pMin = VACIO.pMin; sh.uniforms.pMax = VACIO.pMax;
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP;').replace('#include <project_vertex>', '#include <project_vertex>\nvWP = (modelMatrix*vec4(transformed,1.0)).xyz;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP; uniform vec3 uMin; uniform vec3 uMax; uniform vec3 pMin; uniform vec3 pMax;').replace('void main() {', 'void main() {\n if (all(greaterThan(vWP,uMin)) && all(lessThan(vWP,uMax))) discard;\n if (all(greaterThan(vWP,pMin)) && all(lessThan(vWP,pMax))) discard;');
+  };
+  m.customProgramCacheKey = () => 'vacio'; return m;
+}
+
+// ---------- carga del modelo ----------
+const choque = [];   // mallas sobre las que se camina / con las que se choca
+const torre = new THREE.Group(); scene.add(torre);
+const cbar = document.getElementById('cbar'), ctxt = document.getElementById('ctxt');
+async function cargar(){
+  const idx = await (await fetch('data/remolino_geo.json')).json();
+  const resp = await fetch('data/remolino_geo.bin'); const total = +resp.headers.get('content-length') || 3850452;
+  const rd = resp.body.getReader(); const partes = []; let rec = 0;
+  for(;;){ const {done, value} = await rd.read(); if (done) break; partes.push(value); rec += value.length; cbar.style.width = (rec/total*80).toFixed(1)+'%'; }
+  const buf = new Uint8Array(rec); let o = 0; for (const p of partes){ buf.set(p, o); o += p.length; }
+  const f32 = new Float32Array(buf.buffer);
+  ctxt.textContent = 'materiales';
+  for (const g of idx){
+    const src = f32.subarray(g.offset/4, g.offset/4 + g.count), pos = new Float32Array(g.count);
+    for (let i=0; i<g.count; i+=3){ pos[i]=src[i]; pos[i+1]=src[i+2]; pos[i+2]=-src[i+1]; }
+    const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.computeVertexNormals();
+    const e = estilo(g.key, g);
+    if (e.t) uvTriplanar(geo, ESCALA[e.t]);
+    const mesh = new THREE.Mesh(geo, conVacio(e.m)); mesh.name = g.key;
+    mesh.castShadow = e.sombra !== false; mesh.receiveShadow = !e.vidrio;
+    if (e.vidrio) mesh.renderOrder = 2;
+    torre.add(mesh);
+    if (e.choque){ geo.computeBoundsTree(); choque.push(mesh); }
+  }
+  cbar.style.width = '100%';
+}
+
+// ---------- rellenos de tierra bajo las terrazas de la ronda ----------
+{ const tierra = mat({map:T.tierra, color:'#ffffff', roughness:1});
+  const TZ = [[-40,51.5,-12,53.75,-2],[-40,53.75,-12,56,-4],[-40,56,-12,58.25,-6],[-40,58.25,-12,60.5,-8],[30.02,51.5,90,56,-1.5],[30.02,56,90,60.5,-3],
+              [-40,60.5,90,69,-8],[-40,69,90,72,-9],[-40,87,90,100,-8],[-40,-30,90,0,0],[-40,0,0,51.5,0],[41.5,0,90,51.5,0]];
+  for (const [x0,y0,x1,y1,z] of TZ){ const g = new THREE.BoxGeometry(x1-x0, z+14-0.32, y1-y0); const m = new THREE.Mesh(g, tierra);
+    m.position.set((x0+x1)/2, (z-0.32-14)/2, -(y0+y1)/2); m.receiveShadow = true; scene.add(m); }
+  const G=[]; for (let i=0;i<20;i++){ const ya=51.5+.45*i; G.push([-12, ya, 5.52, ya+.45, -.4*(i+1)]); }
+  const cauce = new THREE.Mesh(new THREE.BoxGeometry(130, 3, 15), tierra); cauce.position.set(25, -12.5, -79.5); scene.add(cauce); }
+
+// ---------- vida: metrocable y niebla ----------
+const cabinas = [];
+{ const mc = mat({color:'#e8731a', roughness:.5}), mv = mat({color:'#2c3336', roughness:.2, metalness:.3});
+  for (let i=0;i<8;i++){ const g = new THREE.Group(); const b = new THREE.Mesh(new THREE.BoxGeometry(2.2,2.3,2.2), mc); b.castShadow=true;
+    const v = new THREE.Mesh(new THREE.BoxGeometry(2.25,0.9,2.25), mv); v.position.y=.35; const c = new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,1.4), mv); c.position.y=1.8;
+    g.add(b, v, c); g.userData = {lado: i%2, fase: i/8}; scene.add(g); cabinas.push(g); } }
+const niebla = (()=>{ const n=900, p=new Float32Array(n*3), v=new Float32Array(n);
+  for (let i=0;i<n;i++){ const a=Math.random()*Math.PI*1.5, r=0.6+Math.random()*2.6; p[i*3]=4.27+Math.cos(a)*r; p[i*3+2]=-(37.25+Math.sin(a)*r); p[i*3+1]=16.2+Math.random()*9.7; v[i]=.08+Math.random()*.2; }
+  const g=new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(p,3));
+  const c=document.createElement('canvas'); c.width=c.height=64; const x=c.getContext('2d'); const gr=x.createRadialGradient(32,32,0,32,32,32); gr.addColorStop(0,'rgba(255,255,255,.9)'); gr.addColorStop(1,'rgba(255,255,255,0)'); x.fillStyle=gr; x.fillRect(0,0,64,64);
+  const pts=new THREE.Points(g, new THREE.PointsMaterial({size:1.6, map:new THREE.CanvasTexture(c), transparent:true, opacity:.35, depthWrite:false}));
+  pts.userData.v=v; scene.add(pts); return pts; })();
+
+// ---------- personaje y camara ----------
+const yo = new THREE.Group();
+{ const cuerpo = new THREE.Mesh(new THREE.CapsuleGeometry(.22, .95, 4, 12), mat({color:'#e8731a', roughness:.6})); cuerpo.position.y = .7; cuerpo.castShadow = true;
+  const cabeza = new THREE.Mesh(new THREE.SphereGeometry(.16, 16, 12), mat({color:'#f1e3d3'})); cabeza.position.y = 1.5; cabeza.castShadow = true;
+  yo.add(cuerpo, cabeza); scene.add(yo); }
+const est = {pos: W(-16, 64, -8), vy: 0, yaw: Math.atan2(-30, -38), pitch: -0.08, dist: 4.2, libre: false, destino: null, enSuelo: true};
+const teclas = {};
+addEventListener('keydown', e => { teclas[e.code] = true; if (e.code==='KeyF'){ est.libre = !est.libre; avisar(est.libre ? 'Modo libre: sin gravedad ni choques' : 'Modo caminar'); } });
+addEventListener('keyup', e => teclas[e.code] = false);
+let arr = null;
+renderer.domElement.addEventListener('pointerdown', e => { arr = {x:e.clientX, y:e.clientY, m:0}; renderer.domElement.setPointerCapture(e.pointerId); });
+renderer.domElement.addEventListener('pointermove', e => { if (!arr) return; const dx=e.clientX-arr.x, dy=e.clientY-arr.y; arr.m += Math.abs(dx)+Math.abs(dy); arr.x=e.clientX; arr.y=e.clientY;
+  est.yaw -= dx*0.005; est.pitch = Math.max(-1.2, Math.min(0.9, est.pitch - dy*0.004)); });
+renderer.domElement.addEventListener('pointerup', e => { if (arr && arr.m < 6) clicIr(e); arr = null; });
+renderer.domElement.addEventListener('wheel', e => { est.dist = Math.max(0, Math.min(14, est.dist + Math.sign(e.deltaY)*0.6)); }, {passive:true});
+const rc = new THREE.Raycaster(); rc.firstHitOnly = true;
+function enVacio(p){ const a=VACIO.uMin.value, b=VACIO.uMax.value; return p.x>a.x&&p.x<b.x&&p.y>a.y&&p.y<b.y&&p.z>a.z&&p.z<b.z; }
+function golpes(origen, dir, lejos, lista){ rc.set(origen, dir); rc.far = lejos; rc.firstHitOnly = false;
+  const h = rc.intersectObjects(lista, false).filter(x => !(x.object.parent===torre && enVacio(x.point))); return h; }
+function clicIr(e){ const v = new THREE.Vector2(e.clientX/innerWidth*2-1, -(e.clientY/innerHeight)*2+1); rc.setFromCamera(v, camera); rc.far = 400; rc.firstHitOnly=false;
+  const h = rc.intersectObjects(choqueTodo(), false).filter(x => !(x.object.parent===torre && enVacio(x.point)));
+  if (h.length && h[0].face && Math.abs(h[0].face.normal.y) > .5 || (h.length && h[0].object.userData.piso)) est.destino = h[0].point.clone(); }
+const interiorChoque = [];
+const choqueTodo = () => choque.concat(interiorChoque);
+const ABAJO = new THREE.Vector3(0,-1,0);
+function suelo(p, desde=0.45){ const h = golpes(new THREE.Vector3(p.x, p.y+desde, p.z), ABAJO, 60, choqueTodo()); return h.length ? h[0].point.y : null; }
+function bloqueado(p, d){ const L = choqueTodo(); for (const alt of [0.6, 1.4]){ const h = golpes(new THREE.Vector3(p.x, p.y+alt, p.z), d, 0.38, L); if (h.length) return true; } return false; }
+function mover(dt){
+  const run = teclas.ShiftLeft || teclas.ShiftRight ? 2.2 : 1;
+  const f = new THREE.Vector3(-Math.sin(est.yaw), 0, -Math.cos(est.yaw)), r = new THREE.Vector3(-f.z, 0, f.x);
+  const d = new THREE.Vector3();
+  if (teclas.KeyW||teclas.ArrowUp) d.add(f); if (teclas.KeyS||teclas.ArrowDown) d.sub(f); if (teclas.KeyD||teclas.ArrowRight) d.add(r); if (teclas.KeyA||teclas.ArrowLeft) d.sub(r);
+  if (d.lengthSq()) est.destino = null;
+  if (est.destino){ const t = est.destino.clone().sub(est.pos); t.y = 0; if (t.length() < .25) est.destino = null; else { d.copy(t.normalize()); est.yaw = Math.atan2(-d.x, -d.z) * .15 + est.yaw * .85; } }
+  if (est.libre){ if (d.lengthSq()) est.pos.addScaledVector(d.normalize(), 6*run*dt); if (teclas.Space) est.pos.y += 5*dt; if (teclas.KeyC) est.pos.y -= 5*dt; return; }
+  if (d.lengthSq()){ d.normalize(); const paso = 1.45*run*dt;
+    for (const dir of [d, new THREE.Vector3(d.x,0,0).normalize(), new THREE.Vector3(0,0,d.z).normalize()]){
+      if (!dir.lengthSq() || isNaN(dir.x)) continue;
+      if (!bloqueado(est.pos, dir)){ const np = est.pos.clone().addScaledVector(dir, paso); const s = suelo(np); if (s !== null && s > est.pos.y - 6){ est.pos.copy(np); break; } }
+    } }
+  const s = suelo(est.pos);
+  if (s !== null && est.pos.y - s < 0.06 + est.vy*0){ est.pos.y = s; est.vy = 0; }
+  else { est.vy -= 9.8*dt; est.pos.y += est.vy*dt; if (s !== null && est.pos.y < s){ est.pos.y = s; est.vy = 0; } if (est.pos.y < -14){ est.pos.copy(W(-14,63,-8)); est.vy=0; } }
+}
+function camaraSigue(){
+  yo.position.copy(est.pos); yo.rotation.y = est.yaw;
+  const cab = est.pos.clone(); cab.y += 1.6;
+  const dir = new THREE.Vector3(Math.sin(est.yaw)*Math.cos(est.pitch), -Math.sin(est.pitch), Math.cos(est.yaw)*Math.cos(est.pitch));
+  let dist = dentro ? Math.min(est.dist, 0.0) : est.dist;
+  if (dist > .3){ const h = golpes(cab, dir, dist, choqueTodo()); if (h.length) dist = Math.max(.2, h[0].distance - .25); }
+  yo.visible = dist > .45;
+  camera.position.copy(cab).addScaledVector(dir, dist);
+  camera.lookAt(cab.clone().addScaledVector(dir, -10));
+}
+
+// ---------- viviendas: el interior tipo se carga al entrar ----------
+const FR = {S:[6.17,11.27,15.27,20.37,24.27,29.37], N:[6.17,11.27,15.27,20.37,24.27,29.37], W:[12.90,17.10,21.20,26.30,30.40,34.60], E:[12.90,17.10,21.20,26.30,30.40,34.60]};
+const FACH = {W:4.77, E:30.77, S:10.75, N:36.75};
+const NOMBRE = {duplex:'Dúplex', individual:'Vivienda individual', mayores:'Residencia de mayores', trabajadores:'Vivienda de trabajadores'};
+const LADO = {N:'norte, al río', S:'sur, al barrio', E:'oriente, al edificio vecino', W:'occidente, la portada del Fucha'};
+const IM = { pared: mat({color:'#f2efe8', roughness:.92}), piso: mat({map:T.piso, color:'#ffffff', roughness:.6}), vidrio: mat({color:'#bcd6dd', roughness:.05, transparent:true, opacity:.18, depthWrite:false}),
+  marco: mat({color:'#3d3f3e', roughness:.5, metalness:.4}), madera: mat({map:T.madera, color:'#ffffff', roughness:.6}), tela: mat({color:'#8f8a80', roughness:1}), tela2: mat({color:'#c9b79b', roughness:1}),
+  cocina: mat({color:'#3a3f3c', roughness:.5}), meson: mat({color:'#e6e3dc', roughness:.3}), planta: mat({color:'#4f7a3a', roughness:.9}), matera: mat({color:'#b06a3b', roughness:.8}), cama: mat({color:'#f4f1ea', roughness:1}),
+  graniplast: mat({map:T.graniplast, color:'#ffffff'}) };
+let dentro = null; const interior = new THREE.Group(); scene.add(interior);
+function caja(x0,y0,x1,y1,z0,z1,m,choca=true){ if (x1-x0<.005||y1-y0<.005||z1-z0<.005) return null; const b = new THREE.Mesh(new THREE.BoxGeometry(x1-x0, z1-z0, y1-y0), m);
+  b.position.set((x0+x1)/2, (z0+z1)/2, -(y0+y1)/2); b.castShadow = b.receiveShadow = true; interior.add(b); if (choca){ b.geometry.computeBoundsTree(); interiorChoque.push(b); } return b; }
+function construir(u){
+  interior.clear(); interiorChoque.length = 0;
+  const [bx0,by0,bx1,by1] = u.bay, z0 = u.z, H = u.tipo==='duplex' ? 6.48 : 3.24, e = .18;
+  const f = u.fachada;
+  // marco local: u a lo largo de la fachada, v hacia adentro
+  const Wd = (f==='N'||f==='S') ? bx1-bx0 : by1-by0, D = (f==='N'||f==='S') ? by1-by0 : bx1-bx0;
+  const L = (a0,a1,v0,v1,h0,h1,m,ch=true) => { let x0,x1,y0,y1;
+    if (f==='N'){ x0=bx0+a0; x1=bx0+a1; y0=by1-v1; y1=by1-v0; } else if (f==='S'){ x0=bx1-a1; x1=bx1-a0; y0=by0+v0; y1=by0+v1; }
+    else if (f==='E'){ x0=bx1-v1; x1=bx1-v0; y0=by0+a0; y1=by0+a1; } else { x0=bx0+v0; x1=bx0+v1; y0=by1-a1; y1=by1-a0; }
+    return caja(x0,y0,x1,y1,z0+h0,z0+h1,m,ch); };
+  // muros de borde: si el borde es fachada lleva las franjas de ventanas de esa fachada
+  const bordes = [['S','x',by0,bx0,bx1],['N','x',by1,bx0,bx1],['W','y',bx0,by0,by1],['E','y',bx1,by0,by1]];
+  const opuesto = {N:'S',S:'N',E:'W',W:'E'}[f];
+  for (const [lado, eje, fijo, t0, t1] of bordes){
+    const esFach = Math.abs(FACH[lado]-fijo) < .05;
+    const vanos = [];
+    if (esFach){ const fr = FR[lado].filter(s => s>t0+.8 && s<t1-.8);
+      fr.forEach((s,i) => { const sala = u.tipo==='duplex' && lado===f && i===0;
+        if (sala) vanos.push([s-.75, s+.75, 0, H]); else { vanos.push([s-.75, s+.75, .8, 2.3]); if (H>4) vanos.push([s-.75, s+.75, 4.04, 5.54]); } }); }
+    else if (lado===opuesto) vanos.push([(t0+t1)/2-.5, (t0+t1)/2+.5, 0, 2.2]);   // puerta de entrada
+    // muro con vanos: entre columnas de vanos muro completo; en cada columna, muro donde no hay vano
+    const pieza = (p0,p1,h0,h1) => { const [c0,c1] = (lado==='S'||lado==='W') ? [fijo, fijo+e] : [fijo-e, fijo];
+      return eje==='x' ? caja(p0, c0, p1, c1, z0+h0, z0+h1, IM.pared) : caja(c0, p0, c1, p1, z0+h0, z0+h1, IM.pared); };
+    const vs = vanos.slice().sort((p,q)=>p[0]-q[0]||p[2]-q[2]);
+    const cols = []; for (const v of vs){ const c = cols.find(c => Math.abs(c.a-v[0])<.01); if (c) c.h.push([v[2],v[3]]); else cols.push({a:v[0], b:v[1], h:[[v[2],v[3]]]}); }
+    let a = t0;
+    for (const c of cols){ if (c.a > a) pieza(a, c.a, 0, H); let h = 0; for (const [h0,h1] of c.h.sort((p,q)=>p[0]-q[0])){ if (h0 > h) pieza(c.a, c.b, h, h0); h = Math.max(h, h1); } if (h < H) pieza(c.a, c.b, h, H); a = Math.max(a, c.b); }
+    if (a < t1) pieza(a, t1, 0, H);
+    if (esFach) for (const v of vs){ const g = eje==='x' ? caja(v[0], fijo-.02, v[1], fijo+.02, z0+v[2], z0+v[3], IM.vidrio, false) : caja(fijo-.02, v[0], fijo+.02, v[1], z0+v[2], z0+v[3], IM.vidrio, false); if (g){ g.castShadow=false; g.renderOrder=2; }
+      const mm = eje==='x' ? [caja(v[0], fijo-.04, v[0]+.05, fijo+.04, z0+v[2], z0+v[3], IM.marco, false), caja(v[1]-.05, fijo-.04, v[1], fijo+.04, z0+v[2], z0+v[3], IM.marco, false)]
+                           : [caja(fijo-.04, v[0], fijo+.04, v[0]+.05, z0+v[2], z0+v[3], IM.marco, false), caja(fijo-.04, v[1]-.05, fijo+.04, v[1], z0+v[2], z0+v[3], IM.marco, false)];
+      if (v[3]-v[2] > 4) (eje==='x' ? caja(v[0], fijo-.04, v[1], fijo+.04, z0+3.17, z0+3.31, IM.marco, false) : caja(fijo-.04, v[0], fijo+.04, v[1], z0+3.17, z0+3.31, IM.marco, false)); }
+  }
+  // piso, cielo
+  L(0, Wd, 0, D, 0, .02, IM.piso); L(0, Wd, 0, D, H-.16, H-.02, IM.pared, false);
+  if (u.tipo==='duplex'){
+    // sala a doble altura junto a la fachada; mezanine al fondo
+    L(0, Wd, 3.6, D, 3.04, 3.24, IM.pared); L(0, Wd, 3.6, D, 3.22, 3.26, IM.piso);
+    L(0, Wd-1.2, 3.58, 3.62, 3.26, 4.34, IM.vidrio, false);
+    for (let i=0;i<12;i++) L(Wd-1.15, Wd-.2, .6+.28*i, .6+.28*(i+1), 0, .27*(i+1), IM.madera);
+    L(1.0, 3.6, 2.5, 3.3, 0, .42, IM.tela); L(1.0, 3.6, 3.1, 3.3, .42, .85, IM.tela); L(1.6, 3.0, 1.3, 2.0, 0, .38, IM.madera, false); L(.5, 4.2, .9, 3.4, .02, .03, IM.tela2, false);
+    L(.35, .75, .4, .8, 0, .45, IM.matera); L(.4, .7, .45, .75, .45, 1.9, IM.planta, false);
+    L(.2, 3.6, D-.8, D-.2, 0, .92, IM.cocina); L(.2, 3.6, D-.8, D-.2, .92, .96, IM.meson); L(.2, 3.6, D-.5, D-.2, 1.5, 2.2, IM.cocina, false);
+    L(1.2, 2.8, 4.9, 5.8, .72, .76, IM.madera); for (const a of [1.0, 2.6]) L(a, a+.4, 4.4, 4.8, 0, .45, IM.madera, false);
+    // nivel 2
+    L(.5, 2.5, D-2.4, D-.3, 3.24, 3.74, IM.cama); L(.5, 2.5, D-.45, D-.3, 3.74, 4.3, IM.madera);
+    L(.15, .75, 3.9, D-2.6, 3.24, 5.6, IM.madera); L(Wd-3.2, Wd-1.6, D-1.0, D-.4, 3.24+.74, 3.24+.78, IM.madera); L(Wd-2.7, Wd-2.2, D-1.6, D-1.1, 3.24, 3.24+.45, IM.tela);
+  } else {
+    // un nivel: bano al fondo, dormitorio y estar junto a la ventana
+    L(Wd-2.4, Wd-.2, D-2.6, D-.2, 0, 2.4, IM.pared); L(.2, 2.6, D-.8, D-.2, 0, .92, IM.cocina); L(.2, 2.6, D-.8, D-.2, .92, .96, IM.meson);
+    L(.4, 2.2, 1.2, 3.4, 0, .5, IM.cama); L(.4, .55, 1.2, 3.4, .5, 1.1, IM.madera);
+    L(Wd-3.0, Wd-1.2, .6, 1.4, 0, .45, IM.tela); L(Wd-3.0, Wd-1.2, 1.25, 1.4, .45, .9, IM.tela);
+    L(2.8, 3.8, 4.0, 5.0, .72, .76, IM.madera); L(.35, .75, .4, .8, 0, .45, IM.matera); L(.4, .7, .45, .75, .45, 1.6, IM.planta, false);
+    if (u.tipo==='mayores') L(.2, .25, 1.2, 3.4, .8, .85, IM.marco, false);
+  }
+  const luz = new THREE.PointLight('#ffd9a8', 9, 12, 1.6); const c = L(Wd/2, Wd/2+.01, D-2, D-2+.01, H-.6, H-.59, IM.marco, false); if (c) luz.position.copy(c.position); interior.add(luz);
+  // vacio en el modelo: se oculta lo que Revit tiene dentro del modulo
+  VACIO.uMin.value.set(bx0+.02, z0+.03, -by1+.02); VACIO.uMax.value.set(bx1-.02, z0+H-.03, -by0-.02);
+}
+function salir(){ interior.clear(); interiorChoque.length = 0; VACIO.uMin.value.set(1e6,1e6,1e6); VACIO.uMax.value.set(1e6,1e6,1e6); dentro = null; }
+let UNIDADES = [];
+function revisarVivienda(){
+  const x = est.pos.x, y = -est.pos.z, z = est.pos.y;
+  const u = UNIDADES.find(u => x>u.bay[0]+.15 && x<u.bay[2]-.15 && y>u.bay[1]+.15 && y<u.bay[3]-.15 && z>u.z-.4 && z<u.z+(u.tipo==='duplex'?6.0:2.8));
+  if (u && u !== dentro){ construir(u); dentro = u; avisar(`${NOMBRE[u.tipo]} · ${u.piso} · fachada ${LADO[u.fachada].split(',')[0]}`); }
+  else if (!u && dentro){ const d = dentro; const lejos = x<d.bay[0]-1.2||x>d.bay[2]+1.2||y<d.bay[1]-1.2||y>d.bay[3]+1.2||z<d.z-1||z>d.z+7; if (lejos) salir(); }
+}
+
+// ---------- lugares ----------
+const NIV = {S1:-4.30, P1:0, P2:4.86, P3:9.72, P4:12.96, P5:16.20, P6:19.44, P7:22.68, P8:25.92, P9:29.16, P10:32.40, P11:35.64, Cub:38.88};
+const LUGARES = [   // nombre, x, y, z (Revit, m) y punto al que se mira
+  ['La portada desde el Fucha', -16, 64, -8, 14, 26, 'Alameda y ciclorruta junto al río; la torre se ve por su fachada occidental, la portada para quien sube por el Fucha.'],
+  ['Gradería al río', -4, 52.4, -0.4, 10, 80, 'Veinte gradas de 0.40 bajan del patio al río: se sientan los vecinos y los que pasan.'],
+  ['Piscina con vista al río', 9.5, 50.4, -4.30, 26, 75, 'Delante del vidrio solo hay agua lluvia que cae por la cascada escalonada: nada tapa el río.'],
+  ['Patio de P1: montaña de juego', 6, 39.4, 0, 22, 47, 'Sendero plano para los mayores y una montaña para trepar y rodar. El arroyo de juego cae al borde de agua.'],
+  ['Jardín de niebla (P5 · noroccidente)', 11, 30.5, 16.20, 2, 40, 'La esquina terraza donde el agua limpia se vuelve nube. Se ve desde el río y el metrocable.'],
+  ['Asaderos y mirador (P9 · noroccidente)', 11, 30.5, 29.16, 2, 40, 'Desde P9 no hay nada arriba en esta esquina: reverencia al río.'],
+  ['Cubierta: huertas y trueque', 17, 20, 38.88, 17, 60, 'Huertas privadas y una mesa para cambiar cosechas entre vecinos.'],
+  ['Vista aérea', -38, 92, 58, 17, 24, ''],
+];
+const rumbo = (x, y, tx, ty) => Math.atan2(-(tx - x), (ty - y));
+function irA(x, y, z, yaw){ salir(); est.destino = null; est.vy = 0; est.libre = false;
+  const p = W(x, y, z); const s = suelo(p, 1.4); p.y = s !== null && Math.abs(s - z) < 1.6 ? s : z; est.pos.copy(p); if (yaw !== undefined) est.yaw = yaw; }
+{ const cont = document.getElementById('lugares');
+  for (const [n, x, y, z, tx, ty, txt] of LUGARES){ const yaw = rumbo(x, y, tx, ty); const b = document.createElement('button'); b.textContent = n;
+    b.onclick = () => { if (n==='Vista aérea'){ est.libre = true; est.pos.copy(W(x,y,z)); est.yaw = yaw; est.pitch = -.55; est.dist = 0; avisar('Modo libre: F para volver a caminar'); return; }
+      irA(x,y,z,yaw); est.pitch = -.08; avisar(n); document.getElementById('luso').textContent = txt; }; cont.appendChild(b); }
+  const ps = document.getElementById('pisos');
+  for (const k of Object.keys(NIV)){ const b = document.createElement('button'); b.textContent = k; b.onclick = () => { irA(17.8, 28.0, NIV[k], est.yaw); avisar('Ascensor · ' + k); }; ps.appendChild(b); } }
+function avisar(t){ const a = document.getElementById('aviso'); a.textContent = t; a.style.opacity = 1; clearTimeout(avisar.t); avisar.t = setTimeout(() => a.style.opacity = 0, 2200); }
+function pisoDe(z){ let k = 'S1'; for (const [n, v] of Object.entries(NIV)) if (z >= v - .3) k = n; return k; }
+const lnom = document.getElementById('lnom'), ldat = document.getElementById('ldat'), lrot = document.getElementById('lrot'), luso = document.getElementById('luso');
+function rotular(){
+  const z = est.pos.y, rio = z + 10;
+  if (dentro){ lrot.textContent = 'Estás dentro de'; lnom.textContent = `${NOMBRE[dentro.tipo]} · ${dentro.piso}`;
+    ldat.textContent = `fachada ${LADO[dentro.fachada]} · ${rio.toFixed(1)} m sobre el río`;
+    luso.textContent = dentro.tipo==='duplex' ? 'Sala a doble altura con ventana de piso a techo; cocina y comedor bajo el mezanine; arriba, habitación y estudio.' : 'Vivienda de un nivel: la ventana es una franja de 1.50 hundida en la fachada.'; }
+  else { lrot.textContent = 'Dónde estás'; lnom.textContent = z > 45 ? 'Vista aérea' : z < -6 ? 'Ronda del río Fucha' : z < -1 ? 'Sótano · gimnasio y piscina' : pisoDe(z) === 'Cub' ? 'Cubierta' : 'Piso ' + pisoDe(z).replace('P','');
+    ldat.textContent = `${z>=0?'+':''}${z.toFixed(2)} sobre P1 · ${rio.toFixed(1)} m sobre el río`; }
+}
+
+// ---------- ciclo ----------
+let t0 = performance.now(), cuadro = 0;
+function ciclo(){
+  const now = performance.now(), dt = Math.min(.05, (now - t0)/1000); t0 = now; const t = now/1000;
+  mover(dt); if (++cuadro % 6 === 0){ revisarVivienda(); rotular(); }
+  camaraSigue();
+  for (const c of cabinas){ const L = 160, s = ((t*4.2/L) + c.userData.fase) % 1; const x = c.userData.lado ? -45 + s*L : 115 - s*L;
+    c.position.set(x, 12.1, c.userData.lado ? -79 : -81); }
+  const p = niebla.geometry.attributes.position, v = niebla.userData.v;
+  for (let i=0;i<p.count;i++){ let y = p.getY(i) - v[i]*dt*1.4; if (y < 15.8) y = 25.9; p.setY(i, y); p.setX(i, p.getX(i) + Math.sin(t*.6+i)*dt*.08); }
+  p.needsUpdate = true;
+  renderer.render(scene, camera); requestAnimationFrame(ciclo);
+}
+addEventListener('resize', () => { camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
+(async () => {
+  await cargar();
+  UNIDADES = await (await fetch('data/unidades.json')).json();
+  const cv = document.getElementById('viviendas');
+  for (const u of UNIDADES){ const b = document.createElement('button');
+    b.textContent = `${NOMBRE[u.tipo]} ${u.piso} · ${u.fachada}`; b.onclick = () => { const cx=(u.bay[0]+u.bay[2])/2, cy=(u.bay[1]+u.bay[3])/2;
+      const o = {N:[cx, cy-1.5, 0], S:[cx, cy+1.5, Math.PI], E:[cx-1.5, cy, -Math.PI/2], W:[cx+1.5, cy, Math.PI/2]}[u.fachada];
+      irA(o[0], o[1], u.z, o[2]); est.dist = 0; }; cv.appendChild(b); }
+  const q = new URLSearchParams(location.search);
+  if (q.has('limpio')) document.querySelector('.hud').style.display = 'none';
+  if (q.has('lugar')){ const l = LUGARES[+q.get('lugar')]; if (l){ if (l[0]==='Vista aérea'){ est.libre=true; est.pos.copy(W(l[1],l[2],l[3])); est.yaw=rumbo(l[1],l[2],l[4],l[5]); est.pitch=-.55; est.dist=0; } else irA(l[1], l[2], l[3], rumbo(l[1],l[2],l[4],l[5])); } }
+  if (q.has('viv')){ const u = UNIDADES.find(u => u.id===q.get('viv')); if (u) document.querySelectorAll('#viviendas button').forEach(b => { if (b.textContent.includes(u.piso) && b.textContent.endsWith(u.fachada)) b.click(); }); }
+  if (q.has('dist')) est.dist = +q.get('dist');
+  if (q.has('pitch')) est.pitch = +q.get('pitch');
+  if (q.has('libre')){ const [x,y,z,yaw,pi] = q.get('libre').split(',').map(Number); est.libre = true; est.pos.copy(W(x,y,z)); est.yaw = yaw; est.pitch = pi; est.dist = 0; }
+  const c = document.getElementById('carga'); c.style.opacity = 0; setTimeout(() => c.remove(), 700);
+  rotular(); ciclo(); window.__listo = true;
+})();
+</script>
+</body>
+</html>
